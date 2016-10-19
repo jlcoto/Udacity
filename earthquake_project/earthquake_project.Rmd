@@ -1,0 +1,928 @@
+---
+title: "Analyzing Earthquakes"
+output: html_document
+---
+
+#Introduction 
+
+What are the consequences of earthquakes and what other variables are related to those consequences? This is our guiding question throughout this exploratory data analysis project. For this purpose we conducted our own data collection, resulting in the database we set out to explore.
+
+The database comes from three main sources:
+1. The Significance Earthquake database, collected by the National Center for Environmental Information. According to their operational definition, a significant earthquake is described as one that at least meets one of the following criteria: "caused deaths, caused moderate damage (approximately $1 million or more), magnitude 7.5 or greater, Modified Mercalli Intensity (MMI) X or greater, or the earthquake generated a tsunami". 
+2. Polity database: that collects information about how democratic/autocratic a country is.
+3. Penn World Tables: Collects information about important macroeconomic variables for countries.
+Additionally, we use a shapefile obtained from the world borders dataset for merging.
+
+We have generated a code book, available [here](https://github.com/jlcoto/Udacity/blob/master/earthquake_project/code_book.txt)  with the variables contained in this data set. Additionally, we elaborated a Jupyter notebook which contains all the cleaning and merging steps conducted for getting our final dataset. The notebook is available [here](https://github.com/jlcoto/Udacity/blob/master/earthquake_project/Merging_cleaning_earthquake_data.ipynb).
+
+We will perform the following steps for our analysis:
+1. Univariate analysis. Here we want to put emphasis on the eartquake (i.e. its magnitude) and also the damage that they caused. There are different continuous and categorical variables we will use for this purpose.
+2. Bivariate analysis. Here we will be looking at correlations and plots that will help us discover a link between earthquakes and the damage they cause. It will also be interesting to check how this is linked to variables as countries' GDP or democratic level.
+3. Multivariate analysis: In this section we will further explore conditional relationships: For example: is the level of damage that an earthquake causes also related to the level of the GDP or its institutions? Are democratic countries less prone to earthquake damages?
+
+Finally we will present three of the plots that summarize our findings for this exploratory phase. Additionally, we will point out some of the limitations and further questions this line of research might bring about. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+#Importing libraries to use
+library(ggplot2)
+library(gridExtra)
+library(tidyr)
+library(dplyr)
+library(plyr)
+library(quantmod)
+library(scales)
+library(memisc)
+library(scales)
+set.seed(1234)
+```
+
+
+```{r, include=FALSE}
+#Loading data and taking out geometry data (we'll work with it later and it is quite heavy)
+setwd("/Users/Jose/Documents/Udacity/data_science/earthquake_project")
+ethqk <-read.csv("earthquake_data")
+ethqk <- subset(ethqk, select=-X)
+```
+
+```{r, include=FALSE}
+#Checking variables included
+
+col_names <- names(ethqk)
+for (i in 1:length(col_names)) {
+  if (grepl("DESCRIPTION", col_names[i])) {
+    print(col_names[i])
+    print(unique(ethqk[,col_names[i]]))
+  }
+}
+##From our results, we noticed that one value had a wrongly imputed value. It should only
+## range from 1 - 4 and it was coded at 34. 
+subset(ethqk, TOTAL_HOUSES_DAMAGED_DESCRIPTION > 4 & !is.na(ethqk$TOTAL_HOUSES_DAMAGED_DESCRIPTION))
+
+#Recoding case appropriately
+ethqk[(ethqk$TOTAL_HOUSES_DAMAGED_DESCRIPTION > 4)  & !is.na(ethqk$TOTAL_HOUSES_DAMAGED_DESCRIPTION), "TOTAL_HOUSES_DAMAGED_DESCRIPTION"] <- NA
+```
+
+
+
+
+
+
+
+
+
+
+### Dataset Structure
+Our dataset couunts with 2174 observations and 55 variables. Below we present a description of each variable and its type. We converted all variables that contain the word description to a factor variable, as they indicate via different categories the amount of damage an earthquake caused. Throughout our analysis we create different variables from this original dataset. When done so, we will indicate the steps we followed for the creation of such variables.
+
+```{r}
+#Declaring factor variables
+for (i in 1:length(col_names)) {
+  if (grepl("DESCRIPTION", col_names[i])) {
+      ethqk[,col_names[i]] <- factor(ethqk[,col_names[i]], 
+                                     ordered = TRUE)
+    }
+}
+```
+
+Our dataset contains one observation per country in case an earthquake that fulfill the condition to be significant has taken take in that country. This means that in case a country registered more than one significant country in a given year, both events are registered in the dataset as separate observations. 
+
+
+
+```{r, warning=FALSE}
+#Getting an overview of the dataset
+str(ethqk)
+
+```
+
+### What is/are the main feature(s) of interest in your dataset?
+As we said before, we want to study the relationship between earthquakes and the damages they generate. As we wil discuss in the limitations section, we will only be using the number of deaths variable given that the other variables have little number of observations.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+We will not be investigating only the deaths in relationship with the earthquake's magnitude. We will also want to explore how an earthquake's consequences may be conditional on the countries' institutional framework and its economic development. 
+
+### Did you create any new variables from existing variables in the dataset?
+
+Throughout the analysis we create several new variables in order to refine our findings. When done so, we will explain the steps taken into generating these new variables.
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+
+During our analysis we observe different characteristics of our dataset that lead or limit our findings. We put considerable efforts into understanding our dataset and see which variables can be used for analysis. 
+
+# Univariate Analysis
+
+## Earthquakes' magnitude
+
+
+First, we want to check the magnitude variable, which give us a measure of how strong the earthquake was. Note that this variable is per se in a logarithmic scale. To check more about how this variable is coded, refer to the code book.
+
+The data set comes with different measures of magnitude. This relates to the different methods used in order to measure the earthquake's strenght. Following the criteria of the original data set, we will use the EQ_PRIMARY variable which combines different measures of magnitudes in order of accuracy. That is, when the most accurate magnitude (i.e. Mw magnitude) is not registered it takes the next best available magnitude. This process continues till all available magnitudes are considered.
+
+We include here a summary of this variable and its range. As it is possible to observe, the mean of this variable is 6.01 and its range goes from 1.6 to 9.5.
+```{r}
+#Summary statistics 
+summary(ethqk$EQ_PRIMARY)
+#Range
+range(ethqk$EQ_PRIMARY, na.rm = TRUE)
+```
+
+
+We plot different histograms using different bins 
+```{r, include=FALSE}
+
+#Plotting histograms with different bin sizes.
+plot_his_bins <- function(bins=30){
+  plot_hist <- ggplot(aes(EQ_PRIMARY), data = subset(ethqk, !is.na(ethqk$EQ_PRIMARY))) +
+  geom_histogram(bins=bins, colour= I("#144121"), fill = I("#0B8258")) +
+  scale_x_continuous( breaks = seq(1, 10, 1)) +
+  xlab("Earthquake's Magnitude") 
+  return(plot_hist)
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+plots_hist <- lapply(c(30, 50, 70), plot_his_bins)
+grid.arrange(plots_hist[[1]], plots_hist[[2]], plots_hist[[3]])
+```
+
+
+Above we plotted histograms for the EQ_PRIMARY, which measures an earthquake's magnitude. As it is possible to observe, the distribution of this variable seems fairly normal. Note that we have used different bins in order to confirm our findings. 
+
+While it is true that the variable shows certain symmetry, it is very interesting to observe how high is the histogram bar for earthquakes that are approximmately between 5 and 6 of magnitude. Even though we use smaller bins, this feature perdures in the plots. We will further inspect this fact. We will find the mode and check how many observations take this value.
+
+```{r, echo=FALSE, message=FALSE}
+
+#Finding the mode for magnitude variable
+getmode <- function(v) {
+   v <- v[!is.na(v)]
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+```{r}
+#Getting dataset mode
+getmode(ethqk$EQ_PRIMARY)
+
+#Checking number of data set that take mode value
+length(ethqk$EQ_PRIMARY[(ethqk$EQ_PRIMARY == 6) & (!is.na(ethqk$EQ_PRIMARY))])
+
+#Checking possible source of measurement error
+length(ethqk$EQ_PRIMARY[(ethqk$EQ_MAG_UNK == 6) & (!is.na(ethqk$EQ_MAG_UNK))])
+```
+
+
+Interestingly, we observe that the mode of our dataset is 6. 110 values from the dataset have this value. In order to inspect our data a bit further, we wanted to see from which particular measure of magnitude we were getting the majority of 6's. 
+
+In particular, we wanted to check if this six came from unknown sources variable reported in the dataset. If it is so, this could be a potential source of measurement error. However, we observe that only 23 observations in this variable take 6. Therefore, we do not have to worry that only this variable is contributing a big chunk of the 6s in EQ_PRIMARY.
+
+### Number of Earthquakes per year
+
+Other thing interesting to inspect is the number of earthquakes per year. We would expect this plot to be uniform. In particular, because there is no theoretical reason for why in a given year there should be more earthquakes. This plot will serve for another purpose: It can show us how thorough is the data set across the years. 
+
+We expect, that for years near the 1900s, we will have less registries of the events. There are many possible reasons for this, but perhaps the most important one is technology limitations. However, for values closer to the present, will have more earthquake entries. This might be because the cost and registry of information have gone severly down in present time. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Plotting number of earthquakes per year
+ggplot(aes(x = YEAR, y =..count..), data = subset(ethqk, !is.na(ethqk$YEAR))) +
+  geom_bar(colour= I("#144121"), fill = I("#0B8258") ) +
+  scale_x_continuous(breaks = seq(1900,2016, 5)) +
+  theme(axis.text.x = element_text(angle=55))
+```
+
+The graph above reveals some interesting details. For example, following our intuition, we find on average less registries for events closer to the 1900s.Also, while there are some years with more seismic activity, for the first years, we cannot really observe a trend in the data. 
+
+The graph, however, also shows increasing activity from the year 2005 onwards. It would be interesting to check if these differences respond to advances in data collection techniques and not due to an increase in seismic activities. 
+
+In order to check this, we proceed as follows. As we want to check if reporting may be one of the reasons for the increase of earthquakes, we want to follow specific number of reports for countries. 
+Given the amount of countries and year in our dataset, plotting number of earthquakes per year / country leads to noisy and uninformative results. Therefore, we decided to group these plots only for a selected number of countries and group the years in 13 year spans (we decided on 13 because it assured an equal cuts, while taking into account the period of high reports that we want to study). 
+
+For the period 2005-2016, where more earthquakes were reported, we selected the top 20 countries for number of earthquakes. After that, we decided to follow the evolution of number of earthquakes considering a 13 year span for the countries in the top 10 places. As we wanted to check that our results showed some consistency, we also randomly sampled 10 of the countries of the 20 countries previously selected. 
+
+The plots below show the number of earthquakes per each of the selected countries for a 13 year span. From the plot there are interesting patterns that emerge. India and China show a remarcable growth in number of earthquakes for the last period. China is of particular importance. It is by far the one that has more reported earthquakes, more than double the number registered for Iran, the second country with the most earthquakes for the 2005-2016 period.
+
+```{r, include=TRUE, warning=FALSE, message=FALSE}
+#Generating our 13 years spans and cutting dataset appropriately
+ethqk$YEAR_cuts <- cut(ethqk$YEAR, breaks=seq(1900, 2017, 13), dig.lab=4)
+
+close_years <- subset(ethqk,(ethqk$YEAR>2003) &(!is.na(ethqk$YEAR)))
+
+#Getting countries with more earthquakes for the last period
+more_earth_last_period <- 
+ord_country <- sapply(split(ethqk[ethqk$YEAR_cuts == "(2004,2017]",], ethqk$NAME[ethqk$YEAR_cuts == "(2004,2017]"]), nrow)
+getting_top_20 <- names(sort(ord_country, decreasing = TRUE)[c(1:20)])
+
+#Getting sample of countries with more earthquakes
+country_sample_ran_samp <- sample(getting_top_20, 10)
+country_sample_top_10 <- getting_top_20[c(1:10)]
+
+#Getting counts for number of earthquakes for selected countries and for the year spans
+get_df_for_sel_countries <- function(country_sample = country_sample_ran_samp) {
+  mat_sample_earthqk <- data.frame(row.names = country_sample)
+  for (i in 1:length(levels(ethqk$YEAR_cuts))) {
+      df_temp <- ethqk[ethqk$YEAR_cuts == levels(ethqk$YEAR_cuts)[i] ,] 
+      sel_countries <- subset(df_temp,  df_temp$NAME %in% country_sample, drop = TRUE)
+      sel_countries$NAME <- factor(sel_countries$NAME, levels = country_sample)
+      results_table <- table(sel_countries$YEAR, sel_countries$NAME)
+      col_sums <- cbind(colSums(results_table))
+      mat_sample_earthqk[, levels(ethqk$YEAR_cuts)[i]] <- cbind(colSums(results_table))
+  }
+  mat_sample_earthqk$countries <- row.names(mat_sample_earthqk)
+  earth_per_sel_countries <- mat_sample_earthqk %>% gather(year, num_earth, -countries)
+  return(earth_per_sel_countries)
+}
+
+ran_sample_count <- get_df_for_sel_countries(country_sample_ran_samp)
+top_10_count <- get_df_for_sel_countries(country_sample_top_10)
+```
+
+
+```{r, fig.height = 10, fig.width = 8, warning=FALSE, echo=FALSE, message=FALSE}
+#Plotting the results
+graph_lab <- c("1900-1913", "1914-1926", "1927-1939", "1940-1952",  "1953-1965", "1966-1978", "1979-1991", "1992-2004", "2005-2016")
+
+p1 <- ggplot(aes(x=year, y=num_earth, color = countries, group = countries), data = top_10_count) +
+  geom_point() +
+  geom_line() +
+  ylab("Number of Earthquakes") +
+  scale_x_discrete(labels=graph_lab) +
+  ggtitle("Evolution of number of Earthquakes\n for top 10 earthquake number countries 2005-2016")
+
+p2 <- ggplot(aes(x=year, y=num_earth, color = countries, group = countries), data = ran_sample_count) +
+  geom_point() +
+  geom_line() +
+  ylab("Number of Earthquakes") +
+  scale_x_discrete(labels=graph_lab) +
+  ggtitle("Evolution of number of Earthquakes\n for random sample of 20 countries most hit by earthquakes")
+
+grid.arrange(p1, p2)
+```
+
+
+After doing a bit of research about this imbalance in the dataset, we found in the US geological survey page the following statement:
+
+>A temporary increase or decrease in seismicity is part of the normal fluctuation of >earthquake rates.  Neither an increase or decrease worldwide is a positive indication >that a large earthquake is imminent.
+>The NEIC now locates about 20,000 earthquakes each year, or approximately 55 per day.  >As a result of the improvements in communications and the increased interest in natural >disasters, the public now learns about earthquakes more quickly than ever before.
+
+### Number of earthquakes per month / day 
+
+While we have encountered an imbalance for years, given that advances in technologies and communications makes measuring and reporting earthquakes easier, this should not affect the day and month in which more earthquakes where reported. In other words, other things equal we do not expect that some months of the year or day to have a higher number of earthquakes. Let's see if the dataset corresponds to our intution.
+
+```{r, echo=FALSE, include=FALSE}
+
+ggplot(aes(x = MONTH, y = ..count..), data = ethqk) +
+  geom_bar(colour= I("#144121"), fill = I("#0B8258")) +
+  scale_x_continuous(breaks = seq(1,12,1)) +
+  ggtitle("Number of Earthquakes per Month")
+
+ggplot(aes(x = DAY, y = ..count..), data = ethqk) +
+  geom_bar(colour= I("#144121"), fill = I("#0B8258")) +
+  scale_x_continuous(breaks = seq(1,31,1)) +
+  ggtitle("Number of Earthquakes per Day")
+
+
+```
+
+Note that in terms of months and days, what we have found corresponds with our intuition. There does not seem to be a particular month more prone to earthquakes. The bar heights of our plots show uniformity. We can also observe some uniformity in the days data. Of course, there is more variation than the months because the quantities we split the data into is higher (number of days.) While there are some months for which there is less earthquakes, this seems to be related with chance. There is no theoretical reason why we should observe less earthquakes in the 16 to the 17 as the plot might suggest. On the other hand, the relatively low value for 31 is related to the fact that not every month has 31 days. 
+
+## Deaths
+
+We have a significant number of variables in our dataset that aim to measure damage. In general, we have continuous variables and factor variables that aim to measure the same. 
+
+For example, for deaths, we count with a variable "DEATHS" that codes the number of casualties provoked by an earthquake. On ther other hand, "DEATHS_DESCRIPTION" discretizes such values in 5 categories, from low to high, according to the degree of damage. You can read more about how each variable is code in the codebook.
+
+One of the interesting things to check is if there is a difference between the continuos and descriptive variables for death:
+
+```{r}
+#Number of observations in data set
+length(ethqk$DEATHS)
+
+#Number of non-missing values for number of deaths
+sum(complete.cases(ethqk$DEATHS))
+
+#Number of non-missing values death description
+sum(complete.cases(ethqk$DEATHS_DESCRIPTION))
+```
+
+After checking the number of observations in our data set, we see that both of our variables that collect information on deaths are quite sparse. We count with death counts for a bit more than half of our data set. Using the description variable does not give us more leverage either, given that it only counts with 67 more observations than the DEATHS count variable.
+
+In what follows, we analyze the distribution of number of deaths.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting distribution of number of deaths
+ggplot(aes(x = DEATHS), data = ethqk) +
+  geom_histogram(bins = 100) +
+  scale_x_continuous(breaks = seq(0, 316000, 100000))
+```
+
+The histogram that we get show us a distribution quite sparsed and shifted to the left. Most of the cases registered appear to have caused less than 10 000 deaths. To check that, we subset our data and check how many earhtquakes have caused more than said number of deaths.
+
+```{r}
+#Number of earthquakes with more than 10000 deaths
+nrow((subset(ethqk, ethqk$DEATHS > 10000)))
+
+#Earthquake that caused more deaths
+ethqk[(ethqk$DEATHS == max(ethqk$DEATHS, na.rm = TRUE)) & (!is.na(ethqk$DEATHS)) ,]$NAME
+```
+
+In total, 27 earthquakes have more than 10000 deaths. The most deadly of them all is the one that occurred in Haiti, with a total toll of 316000 registered deaths.
+
+As we want to oberve better the values that occur at the lower tail of the distribution, we will use a couple of strategies. First, we will apply a logarithmic transformation to our x axis. In that way, extreme values won't be considered so extreme. Also, it would be interesting to observe if we have a lognormal varaible, in which case applying a transformation will be useful for linear regressions. 
+
+On the other hand, as we want to check the values that occur at the bottom more thoroughly, we will zoom our graph into this area using the coordinan cartesian option of ggplot. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting graph with a log scale
+ggplot(aes(x = DEATHS), data = ethqk) +
+  geom_histogram() +
+  scale_x_log10()
+
+
+#Plotting distribution for only 250 or less deaths
+ggplot(aes(x = DEATHS), data = ethqk) +
+  geom_histogram(binwidth = 10) +
+  coord_cartesian(xlim = c(0,250)) + 
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 250, 10)) +
+  ggtitle("Histogram of detahs < 250")
+```
+
+```{r}
+#Percentage of less than 250 deaths
+nrow(subset(ethqk, ethqk$DEATHS < 250)) / sum(!is.na(ethqk$DEATHS))
+
+#Percentage of less than 50 deaths
+nrow(subset(ethqk, ethqk$DEATHS < 50)) / sum(!is.na(ethqk$DEATHS))
+
+#Summary of Deaths variable
+summary(ethqk$DEATHS, rm.na=TRUE)
+
+```
+
+Applying the logarithmic transformation we get something that resembles an exponential distribution, where low values are more common than high values. Plotting histograms for subsets of the data in our lower tail keeps showing us the same story. We get a highly skewed distribution to the left. 
+
+A sign of how highly skewed our data set is that 81.41% of the values are below 250. 68.04% have values less than 50. Thus, it is not surprising that the median is only 11. 
+
+If there is correspondance between both varibles, we would expect to see the same patter for the categorical variable, "DEATH_DESCRIPTION". That is, we would observe more cases classified as 1 (FEW =[1-50] deaths).
+
+```{r}
+#Summary of DEATHS_DESCRIPTION
+summary(ethqk$DEATHS_DESCRIPTION, rm.na = TRUE)
+```
+
+```{r, echo=FALSE}
+#Plot of counts for death description
+ggplot(aes(x = DEATHS_DESCRIPTION, y = ..count..), data = subset(ethqk, !is.na(ethqk$DEATHS_DESCRIPTION))) + geom_bar() +
+  ggtitle("Count of Death Description")
+```
+
+
+As we can observe in the previous graph, and from the summary of the variable, there is great corresponance between deaths and the categorical variable. Most of the cases are within the FEW category (in figure is box 1). Note that there is no perfect match between both variables because, as we have already mentioned, the categorical variable include some cases for which no specific quantity of deaths was reported.
+
+Note also that our dataset counts with a the variable "TOTAL_DEATHS" and "TOTAL_DEATHS_DESCRIPTION". These variables register all the direct and indirect deaths caused by the earthquake (for example, it would include Tsunami victims that followed from the earthquake.) 
+
+To check if this true, we will make a plot overlaying the distribution of DEATHS and TOTAL_DEATHS. We will use a log scale so our plot is not too susceptible to high values.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+double_plot <- data.frame(ethqk$DEATHS,ethqk$TOTAL_DEATHS) %>% gather(var_orig, value)
+
+ggplot(aes(x = value), data = subset(double_plot, !is.na(double_plot$value))) +
+    geom_histogram(aes(colour = "DEATHS"), data=subset(double_plot, (double_plot$var_orig =="ethqk.DEATHS")  & (!is.na(var_orig))), fill = I("#305649")) +
+    geom_histogram(aes(colour = "TOTAL_DEATHS"),data=subset(double_plot, (double_plot$var_orig =="ethqk.TOTAL_DEATHS")  & (!is.na(var_orig))), fill = I("#76D8B5")) +
+  scale_colour_manual("Variable", values = c(I("#305649"), I("#76D8B5"))) +
+  scale_x_log10()
+  
+```
+
+From our exploration, we can see something troubling. For all of the binwidths of both variables, the deaths take higher values. This means, that contrary to what was hypothesized "TOTAL_DEATHS" actually has less values than "DEATHS". 
+
+```{r}
+#Total number of missings Deaths
+sum(!is.na(ethqk$DEATHS))
+
+#Total number of missings Total Deaths
+sum(!is.na(ethqk$TOTAL_DEATHS))
+
+#Correlation for cases where registries exist for TOTAL DEATHS
+cor.test(ethqk$DEATHS[!is.na(ethqk$TOTAL_DEATHS)], ethqk$TOTAL_DEATHS[!is.na(ethqk$TOTAL_DEATHS)])
+ 
+#Difference input for cases where TOTAL DEATHS is given
+setdiff(ethqk$DEATHS[!is.na(ethqk$TOTAL_DEATHS)], ethqk$TOTAL_DEATHS[!is.na(ethqk$TOTAL_DEATHS)])
+```
+ 
+ Our observations on the plot are confirmed when determining the number of missings per variable. As it is possible to see, the TOTAL_DEATHS variable has more number of missings than the deaths variable. 
+ 
+ We also wanted to make sure we are taking all the information into account. While the Total Deaths has arguably less variables, it would be still interesting to analyze if it is conveying extra information on death cases. However, this is evidently not supported by the data. The correlation coefficient show us a incredibly high correlation of almost one. This is a quite significant sign that those variables are carrying the same information. 
+ 
+ In order to dig a bit further in this line of discovery, we found the number of actual values that are differences for cases when a "TOTAL_DEATH" number was reported. It turns out that "TOTAL_DEATHS" only has seven values that are different to "DEATH". We will exclude "TOTAL_DEATHS" from our analysis. This variable does not have significant information, other than the one already given by "DEATHS" and, additionally taking it out from our analysis prevents us from multicollinearity issues.
+
+## Bivariate Exploration
+
+In this part we will explore different bivariate relationships in the data. In particular, we are interested in understanding the relationship between earthquakes and the damages it generates. 
+
+In this line of investigation. A main question that we want to tackle here concerns the relationship between earthquakes and deaths. For example: are always the stronger earthquakes the ones that causes more death and destruction? 
+
+Below we use a scatter plot to investigate this question.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Scatter plot function
+scatter_ethqk_deaths <- ggplot(aes(x= EQ_PRIMARY, y = DEATHS), data = ethqk) +
+  scale_y_continuous(labels = comma) +
+  xlab("Eathquake's magnitude") +
+  ylab("Number of deaths") +
+  ggtitle("Number of deaths / Earthquake's magnitude")
+scatter_ethqk_deaths + geom_point()
+```
+
+The graph above is not very informative to what the shape between earthquake and number of deaths is. The problem is that there are some really high values (such as the one we observed in Haiti), which really do not let us see what the relationship is for lower values of deaths. We will customize our scatter plot appropriately in order to have a better understanding of this relationship.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+
+scatter_ethqk_deaths + 
+   geom_point() +
+  coord_cartesian(ylim = c(0, 7500))
+
+scatter_ethqk_deaths +
+  scale_y_log10(labels = comma) +
+  geom_point(alpha=0.4, position = position_jitter(h = 0), colour=I("#305649")) + 
+  geom_smooth(method='lm', colour = I("#AAADAC"), alpha = 0.2, se=FALSE) +
+  ggtitle("Log Number of deaths / Earthquake's magnitude")
+
+```
+In order to get more informative graphs we first restricted our output limiting the values the variable deaths might take. We did this for different values, though we only show here from 0-7500 deaths. We also perform a transformation for the values of y. Note that this conveys a more interesting picture about how these variables are related. Also, in this graph we use all of the values of deaths, therefore it gives us a more comprehensive picture of how these variables are overall related. 
+
+The picture show us a somewhat positive relation between both variables. This is confirmed by the regression line that we plot on top. We can also quantify this relationship finding the correlation between both variables.
+
+```{r}
+with(ethqk, cor.test(EQ_PRIMARY,log10(DEATHS)))
+```
+
+We can also check the relationship between deaths and earthquake by using the categorical variable DEATHS\_DESCRIPTION. As we saw before, this variable classifies deaths in 5 different levels, according to the number of deaths. In this case, we will use a boxplot to check some facts about the distribution of magnitudes across the different categories of DEATHS\_DESCRIPTION. Note that we exclude category None as there was only one observation in our dataset that takes this value. We also exclude NAs.
+
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+#Realabelling levels for graph purposes
+ethqk$DEATHS_DESCRIPTION <- revalue(ethqk$DEATHS_DESCRIPTION, c("0"="None", "1"="Few", "2"="Some", "3"="Many", "4"="Very Many"))
+```
+
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+#Plotting boxplot
+ggplot(aes(x = DEATHS_DESCRIPTION, y = EQ_PRIMARY), data = subset(ethqk, DEATHS_DESCRIPTION != "None" & !is.na(DEATHS_DESCRIPTION))) +
+  geom_boxplot(aes(fill=DEATHS_DESCRIPTION)) +
+  ggtitle("Boxplot Magnitude by number of Death Category") +
+  xlab("Number of deaths category") + 
+  theme(legend.position="none")
+
+
+summary(ethqk$DEATHS_DESCRIPTION )
+```
+
+The boxplot show us some interesting details. For example we can see that those earthquake with few (from 1 to 50) casualties are on average less strong as the ones that have very many casualties (more than 1000 deaths). For the categories in the middle (some and many), however, there is no much difference. Their medians appear to be quite close. While the variable some (from 50 -100 deaths) has more widespread values, the distribution of many (from 101-1000) deaths seems to take less values. Still, they are remarkably close. This is a first indication that there might be reasons, besides the streght of the earthquake, that also explain the number of victims. We obtain the summary of the variables below:
+
+```{r}
+
+by(ethqk$EQ_PRIMARY, ethqk$DEATHS_DESCRIPTION, summary)
+
+```
+
+Here we can observe the similiarity of the distribution of earthquake magnitude for Some and Many categoires. The median is exactly the same. The first quartile is also quite near as well as the mean. For the very many, we see that key statistics are higher than on the other categories.
+
+Now, we will explore the relationship between an earthquakes magnitude and tsunamis. An interesting thing to verify is if on average stronger earhquakes are the ones that generate tsunamis. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+#relabelling tsunami category
+ethqk$tsun <- as.character(ethqk$FLAG_TSUNAMI)
+ethqk$tsun[ethqk$tsun == ""] = "Non registered"
+ethqk$tsun <- as.factor(ethqk$tsun)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting histogram
+ggplot(aes(x = EQ_PRIMARY), data = ethqk) +
+  geom_histogram(aes(y=..count../sum(..count..))) +
+  facet_wrap(~tsun) 
+
+#Plotting boxplot
+ggplot(aes( x = tsun, y = EQ_PRIMARY), data = subset(ethqk, !is.na(ethqk$EQ_PRIMARY))) +
+  geom_boxplot(aes(fill= tsun)) +
+  theme(legend.position="none") 
+
+
+```
+
+We can see in the plots above that, indeed, that earthquakes for which we have registries that a tsunami occurred were stronger than the ones with no tsunami. We confirm this by using a boxplot. In the boxplot we can observe how the box corresponding to the Tsunami category is higher than the one were no tsunami was observed. That is, the interquartile values, as the median of the cases where there was a Tsunami is higher than where there was none. We present the exact quantities below:
+
+```{r}
+by(ethqk$EQ_PRIMARY, ethqk$tsun, summary)
+```
+
+We can also check if the earthquakes that generated a tsunami afterwards can be catalogized as the most deathliest ones. There are two facts that will point out into that direction: 1. We have seen that tsunamies are caused by earthquakes that are stronger, on average and, 2. we have observe that there is a positive relationship between the magnitude of the earhquake and the number of deaths. We use a boxplot to check on this relationship.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+#Boxplot deaths tsunami
+ggplot(aes(y = DEATHS, x =tsun), data = ethqk) +
+  geom_boxplot(aes(fill= tsun)) +
+  scale_y_log10(labels = comma) 
+
+#Summary by tsunami
+by(ethqk$DEATHS, ethqk$tsun, summary)
+
+```
+
+The  graph and numbers we obtained seem aligned with what was hypothesized. The distribution of deaths for tsunamis is shifted to the right. This means that, in general, these are the ones that generate more casualties. 
+
+As we have seen, the relatiionship between an earthquake's magnitude and the number of deaths is not perfectly linear. There seems to be some other variables that also influence in the damage that is caused by an earthquake. One of this variables might be related to the countries' level of development. In general, we expect that richer countries have better infrastructure and, thus, are better able to prevent and face the consequences of an earhquake. 
+
+In order to check this, we will use the expenditure side GDP variable. However, we will convert it to per capita by dividing it by the number of population. We will, then use a scatterplot between this variable and number of deaths. Note that our data on GDP only runs from 1950.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#Creating gdp per capita var
+ethqk$cap_gdp <- ethqk$rgdpe / ethqk$pop
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Scatter plot
+ggplot(aes(x = cap_gdp, y =  DEATHS), data=ethqk) +
+  geom_point(alpha=0.7, position = position_jitter(h = 0), colour=I("#305649")) +
+  scale_x_log10(labels = comma) +
+  geom_smooth(method='lm', colour = I("#AAADAC"), alpha = 0.2, se=FALSE) +
+  scale_y_log10(labels = comma)
+
+```
+
+In the scatter plot above we have transformed both axis using a log10 scale. The scatter plot, at first glance, does not give too much information about the relationship between both variables. We plotted a regression line on top. The regression line gives some indication that this is, as expected, a negative relationship. The more percapita GDP a country has, the less number of deaths caused by an earthquake. Below, we quantify the relationship finding the variables' correlation:
+
+```{r}
+with(ethqk, cor.test(log10(cap_gdp), log10(DEATHS)))
+```
+
+As we expected, the correlation is negative, implying that there is a negative relationship between the number of deaths and a countries' gdp.
+
+We will check if the same can be said for democracy level. In general, we would expect that democratic countries are better able to deal with earthquakes. Between many of the reasons for this relationship we could mention at least two: 1. on average democratic countries are richer and, as seen before, richer countries present less deaths in case of an earthquake, 2. people in democracies have more means to overturn authorities when they don't respond appropriately to disasters, therefore, the interests of authorities and people are more aligned. 
+
+In order to proceed, we recode the variable democracy. We will call democratic regimes those with positive polity scores and autocratic those with negative polity scores. We will then study which of these regimes have higher distribution of deaths in case of an earthquake. 
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#Recoding polity variable
+ethqk$democ_autoc[ethqk$polity2 >= 1]  = "democracy"
+ethqk$democ_autoc[ethqk$polity2 <= 0] = "autocracy"
+ethqk$democ_autoc <- as.factor(ethqk$democ_autoc)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Scatter plot of relationship
+ggplot(aes(x = democ_autoc, y = DEATHS), data = subset(ethqk, !is.na(ethqk$democ_autoc))) +
+  geom_boxplot(aes(fill = democ_autoc)) +
+  scale_y_log10(labels = comma) +
+  ggtitle("Boxplot of Log10 number of deaths by regime type")
+```
+
+```{r}
+#Number of observations democracy
+sum(ethqk$democ_autoc == "democracy", na.rm = TRUE)
+
+#Number of observations autocacy
+sum(ethqk$democ_autoc == "autocracy", na.rm = TRUE)
+
+#Summary by democ / autoc
+by(ethqk$DEATHS, ethqk$democ_autoc, summary)
+```
+
+
+In the boxplot we can observe that, indeed, democracies seem to have less deaths than autocracies, on average. Note, also, that the distribution for deaths in autocracies is more widespread, showing us that autocracies may experience more extreme cases of deaths. Because we wanted to make sure that this comparison relied on balanced datasets, we check the number of cases that we have for each regime type. Our sample is fairly balance. In total, we have 940 democracies and 915 autocracies. 
+
+We also wanted to have a finer grasp on how regime type may be related to number of deaths in case of an earthquake. Recoding the polity variable in only democracy and autocracy may hide some intermediate differences between both regimes. After all, between full democracies and autocracies there is a whole spectrum of regimes that our previous coding might not be taking into account. We classify the regimes in the following way, closely following the coding proposed by the Center for Systematic Peace (research institution that elaborates the dataset.):
+1. Democracies: scores 6 - 10
+2. Open Anocracy: scores 1 - 5
+3. Closed Anocracy: scores -5 - 0
+4. Autocracy: -10 - -6.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+#Recoding polity - 4 regime types
+ethqk$regime_type_4[ethqk$polity2 >= 6 & ethqk$polity2 <= 10]  = "democracy"
+ethqk$regime_type_4[ethqk$polity2 >= 1 & ethqk$polity2 <= 5] = "open anocracy"
+ethqk$regime_type_4[ethqk$polity2 >= -5 & ethqk$polity2 <= 0] = "closed anocracy"
+ethqk$regime_type_4[ethqk$polity2 >= -10 & ethqk$polity2 <= -6] = "autocracy"
+ethqk$regime_type_4 <- factor(ethqk$regime_type_4, levels = c("autocracy", "closed anocracy", "open anocracy", "democracy"))
+
+#Counting number of cases per each regime type
+sapply(split(ethqk$regime_type_4, ethqk$regime_type_4), FUN = function(x) length(x[!is.na(x)]))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting box plot DEATHS per regime type
+ggplot(aes(x = regime_type_4, y = DEATHS), data = subset(ethqk, !is.na(ethqk$regime_type_4))) +
+  geom_boxplot(aes(fill = regime_type_4)) +
+  scale_y_log10(labels = comma) +
+  ggtitle("Boxplot of Log10 number of deaths by regime type")
+
+#Scatter plot connecting means
+ggplot(aes(x = regime_type_4, y = DEATHS, group = 1), data = subset(ethqk, !is.na(ethqk$regime_type_4) & !is.na(ethqk$DEATHS) )) +
+  scale_y_log10(labels = comma ) +
+  geom_point(aes(colour = regime_type_4), alpha = 0.5) +
+  geom_point(stat = "summary", fun.y = mean, colour = I("#B0CE20"), size = 3) +
+  geom_line(stat = "summary", fun.y = mean, colour = I("#B0CE20"), size = 1.1) +
+  ggtitle("Scatter plot of Log10 Deaths vs. Regime Type \n  w/ connecting Mean Line")
+
+#Summary by regime type
+by(ethqk$DEATHS, ethqk$regime_type_4, summary)
+
+```
+
+Above we have plotted the boxplot and scatterplot of deaths vs. regime type. First, it is important to notice how many cases we have for each regime type. While democracy and autocracy seem to be balance, we have fewer cases for closed anocracy and open anocracy.Therefore, some of the statistics for these regime type (e.g. mean) will be more vulnerable to extreme values. 
+
+Note that, except for the case of closed anocracy, the graphs show a decreasing death tendency the more democratic a regime is. Just by comparing means, democracies experience approximately 1500 less deaths. 
+
+It is interesting to see that closed anocracies is the type of regime that shows higher distribution for number of deaths. This goes against what was expected, namely that the more open a regime is, the less deaths should it experience. However, there is more than one reason not to discard away our initial hypothesis. Note first, as already mentioned, that we have fewer number of regimes in the closed anocracy category. Additionally, reporting standards change according to how open a regime is. In autocracies there is no free press, and authorities may have important reasons not to report the actual damages and deaths an earthquake may have caused. In closed anocracies there might be more freedom of press, which could mean more accurate reports on deaths. 
+
+However, between the relationship type of regime and number of deaths there might be other variables that also play a role. For example, it might be the case that autocracies have on average more deaths because these regimes are also the ones that experience stronger earthquakes. We explore this question below. We plot boxplots for earthquake magnitude and both type of regime codes that we introduced above. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting boxplot
+ggplot(aes(x = democ_autoc, y = EQ_PRIMARY), data = subset(ethqk, !is.na(ethqk$democ_autoc))) +
+  geom_boxplot(aes(fill = democ_autoc )) +
+  ggtitle("Magnitude of Earthquake by regime type") +
+  ylab("Magnitude") +
+  xlab("Regime Type")
+
+#Summary of magnitude per regime type
+by(ethqk$EQ_PRIMARY, ethqk$democ_autoc, summary)
+
+ggplot(aes(x = regime_type_4, y = EQ_PRIMARY), data = subset(ethqk, !is.na(ethqk$regime_type_4))) +
+  geom_boxplot(aes(fill = regime_type_4 )) +
+  ggtitle("Magnitude of Earthquake by regime type") +
+  ylab("Magnitude") +
+  xlab("Regime Type")
+
+#Summary of magnitude per regime type
+by(ethqk$EQ_PRIMARY, ethqk$regime_type_4, summary)
+
+```
+ 
+Our plots and descriptive statistics show that, indeed, there are some differences between the magnitude of earthquake and regime type. On average, democracies experience earthquakes of lesser magnitude. However, these differences are not very big. Still, we can ask ourselves if these differences are based on actual earthquake experienced or if it is a byproduct of the data collection limitations. Again, as we mentioned before, data on earthaukes are more difficult to collect in autocracies. Therefore, we want to check what was the main source used for collecting these cases.
+ 
+ 
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+#Getting source of information of EQ_PRIMARY
+EQ_SOURCE <- data.frame(source = matrix(NA, nrow = length(ethqk$EQ_PRIMARY)))
+for (i in 1:length(col_names)) {
+  if ((grepl("EQ", col_names[i])) & (col_names[i] != "EQ_PRIMARY")) {
+    EQ_SOURCE$changes[ethqk[, col_names[i]] == ethqk$EQ_PRIMARY] = col_names[i]
+    EQ_SOURCE <- within(EQ_SOURCE, source <- ifelse(is.na(source), changes, source))
+    EQ_SOURCE$changes <- NA
+
+  }
+}
+
+ethqk$eq_source <- EQ_SOURCE$source
+ethqk$eq_source <- factor(ethqk$eq_source, levels = c("EQ_MAG_MW", "EQ_MAG_MS", "EQ_MAG_MB", "EQ_MAG_ML", "EQ_MAG_MFA", "EQ_MAG_UNK"), ordered = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting regime vs source information
+ggplot(aes(x = eq_source, y = ..count../sum(..count..), fill = democ_autoc), data = subset(ethqk, !is.na(ethqk$eq_source) & !is.na(ethqk$democ_autoc))) +
+  geom_bar(position = "dodge") +
+  ggtitle("Percentage of Type of Magnitude per regime type") +
+  ylab("Percantage") +
+  xlab("Source of magnitude")
+
+ggplot(aes(x = eq_source, y = ..count../sum(..count..), fill = regime_type_4), data = subset(ethqk, !is.na(ethqk$eq_source) & !is.na(ethqk$regime_type_4))) +
+  geom_bar(position = "dodge") +
+  ggtitle("Percentage of Type of Magnitude per regime type") +
+  ylab("Percantage") +
+  xlab("Source of magnitude")
+
+```
+
+As we mentioned before, the EQ_PRIMARY, which we have used so far as a measure of the earthquake's magnitude, is composed by different sources. The National Center for Environmental Information gathers this information from a series of magnitude measures. The order of preference for where it takes this information is the following:
+1. Mw Magnitude 
+2. Ms Magnitude
+3. Mb Magnitude
+4. Ml Magnitude
+5. Mfa Magnitude
+6. Unknown Magnitude
+
+Using the EQ\_PRIMARY we create a new variable called source. By comparing the value of EQ\_PRIMARY to the other magnitude values we are able to determine the origin of the magnitude. We then plot values according to the type of regimen.
+
+As it is possible to observe, democracies have higer values in the Mw magnitudes while autocracies are higher in the second best available magnitude, the Ms magnitude. Also, note that a higher number of cases for autocracies come from unknown sources. Therefore, the differences that we priorly observed may be grounded in the different measure mechanisms that are used in autocracies and democracies. This might be a source of measurement error that can generate bias in our results.
+
+## Multivariate analysis
+
+So far our analysis has taken us to different paths. We know how the magnitude of an earthquake is positively related to the deaths caused. We observed, however that there are certain variables that also exert an influence in this relationship: wether the earthquake was followed by a Tsunami, country's GDP per capita and the level of democracy. Now is time to combine these variables and determine what kind of patterns we can observe. 
+
+### Earthquakes and Tsunami
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting scatterplot of mag, deaths and tsun
+ggplot(aes(x = EQ_PRIMARY, y = DEATHS), data = subset(ethqk, !is.na(tsun))) +
+  geom_point(aes(colour = tsun), alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10(labels = comma)
+
+ggplot(aes(x = 1*round(EQ_PRIMARY/1), y = DEATHS ), data = subset(ethqk, !is.na(tsun))) +
+  geom_point(aes(colour = tsun),alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(4.3, 7.6)) +
+  geom_smooth(aes(color = tsun), stat = "summary", fun.y = mean) +
+  ggtitle("Earthuakes Magnitude vs. Deaths and Tsunami")
+
+```
+
+Above, we plotted a scatter plot of the magnitude v. the number of deaths and on top we color the points according to wether a tsunami was present after the earthquake. Note that, in general, we have less cases where an earthquake was followed by a tsunami. Also, the relationship to which we referrer above that on average stronger earthquake provoke tsunamis is also observable in the figure. 
+
+Note however that the relationship with deaths is not as straightforward. In our second plot we use bins of 1 for the earthquake scale and calculate conditional means of deaths according to if a tsunami was present. While the lack of observation for earthquakes followed by tsunamis make us cautious about the significance of this plot, at least it casts some doubt onto the fact that an earthquake followed by a tsunami is per se more letal that only an earthquake.
+
+Now we wil explore the relationship between GDP per capita, deaths and earthquakes.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Scatter plot mag, death and gdp per cap
+ggplot(aes(x = EQ_PRIMARY, y = DEATHS), data = subset(ethqk, !is.na(cap_gdp))) +
+  geom_point(aes(colour = cap_gdp), alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10(labels = comma) +
+  ggtitle("Earthuakes Magnitude vs. Death rate and GDP")
+```
+
+The previous graph starts being informative about the relationship between these three variables. However, the number of points and overlapping is not the best in order to discover some patterns. In what follows we group the per capita GDP variable in 3 equally sized groups. We name these groups: low income, middle income and high income. Then we find the conditional expectation of deaths per level of income, given that an earthquake of certain magnitude was experienced. We use different bins for magnitude in order to consider the bias vs. variance tradeoff.
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+#Only decimal notation
+options(scipen=10000)
+
+#grouping gdp
+ethqk$gdp_class <- cut(ethqk$cap_gdp, breaks=quantile(ethqk$cap_gdp, probs=seq(0, 1, length = 4), na.rm=TRUE), include.lowest=TRUE, labels = c("low income", "middle income", "high income"), ordered_result = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Plotting conditional distribution
+ggplot(aes(x = 0.5*round(EQ_PRIMARY/0.5), y = DEATHS ), data = subset(ethqk, !is.na(rgdpe))) +
+  geom_point(alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(4.3, 7.6)) +
+  geom_smooth(aes(color = gdp_class), stat = "summary", fun.y = mean) +
+  ggtitle("Earthuakes Magnitude vs. Deaths and Income level")
+```
+
+We used different bandwidths for producing the plot above. We selected the one with 0.5 bandwidth for the earthquakes' magnitude, because we considered it gave a good bias vs. variance tradeoff. We also cut the x axis to show only the places where we have enough points in extreme left and extreme right values there are not enough points to get useful insights. 
+
+In general, the picture is in line with we had expected. For low values of magnitude, the average deaths experienced by high, middle and low income countries are close. Still, low income countries are on top. The gap between type of countries per income starts at higher values on magnitude. Here we can observe that low income countries always have, on average, more deaths than middle and high income countries. It is interesting to notice that the difference between middle and high income countries is not very stark. This could suggest, that passed a threshold of income coutries are better able to respond to earthquakes. However, there are other variables that may also be playing a key role in that relationship. 
+
+We will continue our analysis considering the democratic level of the countries. As we before, we use the polity score and continue with the two groupings we used: democratic/undemocratic and autocracy/closed anocracy/open anocracy/democracy.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+
+p1_democ_autoc <- ggplot(aes(x = EQ_PRIMARY, y = DEATHS), data = subset(ethqk, !is.na(democ_autoc))) +
+  geom_point(aes(colour = democ_autoc), alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10(labels = comma) +
+  ggtitle("Earthuakes Magnitude vs. Deaths and type of regime")
+
+p2_regime_4 <- ggplot(aes(x = EQ_PRIMARY, y = DEATHS), data = subset(ethqk, !is.na(regime_type_4))) +
+  geom_point(aes(colour = regime_type_4), alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10(labels = comma) +
+  ggtitle("Earthuakes Magnitude vs. Deaths and type of regime")
+
+grid.arrange(p1_democ_autoc, p2_regime_4)
+
+```
+
+As before, we plot the conditional expectation of deaths given regime type and earthquakes' magnitude.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+ggplot(aes(x = 0.5*round(EQ_PRIMARY/0.5), y = DEATHS), data = subset(ethqk, !is.na(democ_autoc))) +
+  geom_point(alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(4.3, 7.6)) +
+  geom_smooth(aes(color = democ_autoc), stat = "summary", fun.y = mean) +
+  ggtitle("Conditional Expectation of deaths given magnitude and regime type")
+
+ggplot(aes(x = 0.5*round(EQ_PRIMARY/0.5), y = DEATHS), data = subset(ethqk, !is.na(regime_type_4))) +
+  geom_point(alpha=0.7, position = position_jitter(h = 0)) +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(4.3, 7.6)) +
+  geom_smooth(aes(color = regime_type_4), stat = "summary", fun.y = mean) +
+  ggtitle("Conditional Expectation of deaths given magnitude and regime type")
+
+```
+
+The plots above are in line with what we have already expected. Regime type is related to the number of victims a country has due to an earthquake. Note that is always countries whose regime is more closed, the ones that have more victims. This can be seen in both of the plots: the ones in which we only compare democracies and autocracies and the other one in which we used a fine grained classification. 
+
+In what follows, we perform a linear regression of the log transfromation of the DEATHS variable on the variables we have analyzed so far. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+m1 <- lm(I(log(DEATHS)) ~ EQ_PRIMARY, data = ethqk)
+m2 <- update(m1, ~ . + I(log(cap_gdp)))
+m3 <- update(m1, ~ . + democ_autoc)
+m4 <- update(m2, ~ . + democ_autoc)
+m5 <- update(m4, ~ . + I(log(pop)))
+mtable(m1, m2, m3, m4, m5)
+```
+As it is possible to observe by the results, our models capture some but not all the variation of the DEATHS variable. Our R squared is rather low at 0.2. This means, as we will comment in the limitations section, that there is wide scope to include extra variables in our analysis. 
+
+It is interesting to see that the magnitude of the earthquake is always strongly positively related to the amount of deaths. In our plots we recurrently establish this relationship. Our most conservative coefficient on the magnitude tell us that a 10% increase in magnitude is related to approximately 12% increase of deaths. 
+
+As we also expected, the variable on democracry is negative. Here, autocracy is the base case. For our third regression, this means that on average democracies are related with 40% less deaths. The same negative relationship is found with per capita gdp. This means that a 10% increase in gdp is related with 4% less deaths. Note also that once per capita gdp enters the regression, the regime type variable is no longer significant. We also tried different regressions with different variables (output not show) but we did not get significance for them. We are careful here to only speak about relationships and not causation. There are many reasons why the linear regressions before are not a good model to infer causation. Problems such as endogeneity of our regressors make it impossible for us to claim causation. 
+
+# Styling three plots
+
+We select three of our previous plots from before. We aim to provide these plots with appropriate style/title and lables, for a final presentation. 
+
+```{r, echo=FALSE, warning=FALSE}
+
+new_labels_tsu = c("No Tsunami", "Tsunami")
+tsu_labeller <- function(variable,value){
+  return(new_labels_tsu[value])
+}
+
+ggplot(aes(x = EQ_PRIMARY), data = ethqk) +
+  geom_histogram(aes(y=..count../sum(..count..)), colour= I("#144121"), fill = I("#0B8258")) +
+  facet_wrap(~tsun, labeller = tsu_labeller) +
+  ggtitle("Distribution of Earthquakes Magnitudes\n per Tsunami Event") +
+  ylab("Frequency") +
+  xlab("Earthquake's Magnitude") +
+  theme_bw()
+
+```
+
+As explained before, in this graph we plot the distribution of magnitudes according to if a tsunami was present after an earthquake. In the graphs we can clearly observe that the distribution of "tsunami earthquakes" is shifted to the right when we compare it to the distribution for the cases where no tsunami was present. This means that tsunamis are related to stronger earthquakes.
+
+```{r, echo=FALSE, warning=FALSE}
+
+ggplot(aes(x = cap_gdp, y =  DEATHS), data=ethqk) +
+  geom_point(alpha=0.7, position = position_jitter(h = 0), colour=I("#305649")) +
+  scale_x_log10(labels = comma) +
+  geom_smooth(method='lm', colour = I("#AAADAC"), alpha = 0.2, se=FALSE) +
+  scale_y_log10(labels = comma) +
+  ggtitle("Scatter Plot Log Deaths v. Log Per capita GDP") +
+  xlab("Log Per capita GDP") +
+  ylab("Log Number of Deaths") +
+  theme_bw()
+
+```
+
+Above, we have plotted the relationship between log per capita and log number of deaths. We use a logarithmic transformation in both cases because both distributions show extreme values. In the plot we can observe a negative relation between both variables. This means that a higher GDP is related with less deaths in case of an earthquake. We have plotted a linear regression line on top of the plot in order to capture the relationship between both variables. Note that just by looking at the scatter plot (that is, without the regression line on top) is not easy to determine the direction of the relation between both variables.
+
+
+```{r, echo=FALSE, warning=FALSE}
+ggplot(aes(x = 0.5*round(EQ_PRIMARY/0.5), y = DEATHS), data = subset(ethqk, !is.na(regime_type_4))) +
+  geom_point(alpha=0.5, position = position_jitter(h = 0)) +
+  scale_y_log10() +
+  coord_cartesian(xlim = c(4.3, 7.6)) +
+  geom_smooth(aes(color = regime_type_4), stat = "summary", fun.y = mean, size=1.5) +
+  ggtitle("Conditional Expectation of deaths \n given magnitude and regime type") +
+  xlab("Earthquake's Magnitude -- 0.5 bins") +
+  ylab("Log Deaths") +
+  scale_color_manual(name="Regime Type", values = c(I("#C74787"), I("#4AB153"), I("#B257CD"), I("#69BDB9"))) +
+  theme_bw() 
+  
+```
+
+In the plot above we see the means of deaths conditioned on magnitude and regime type. In order to control for bias and variance tradeoff we have chosen a bandwidth of 0.5 and calculated the means for each regime type. We connect these means with a line. As we can observe, there seems to be a relationship between number of deaths and regime type, namely that in closer regimes (i.e. autocracies and closed anocracies) we can observe higher number of deaths for higher magnitude of earthquakes. However, this is only a relationship that does not imply causation. There might be multiple variables that we are not controlling for that might also be relevant for establishing a causal link.
+
+# Reflection: Main findings and limitations
+
+In this exploratory analysis we wanted to learn about the relationship between earthquakes and number of deaths. We explored each variable alone and also studied their relationships in bivariate and multivariate analysis. Our main findings are that number of deaths following an earthquake is negatively related to the level of democracy in a country and their GDP per capita. However, as it was clear in our explanation and from the regressions we conducted, there are multiple variables unaccounted for that should also be considered. In particular, our analysis is limited due to the following:
+
+1. As we have seen in the exploratory analysis, our dataset is far from being perfect. For example,  we seem to have a lack of records for countries for years closer to the 1900s.Also, the registries and their quality vary according to where they come from. There is fewer information available  for some countries. For example, we saw how China information on earthquakes grew significantly for current periods, which is an indication that we are lacking observation for older periods for this same country. 
+2. As our dataset runs from 1900s it is difficult to find information that is also available for those periods. For example, the dataset that we gathered on gdp per capita only run from 1950s. Therefore our analysis between earthquakes and gdp per capita only could consider half of our earthquake datasets. It would have been better to have gdp information that also considered the span of our earthquake dataset. However, gathering information on gdp on a worldwide scale for long periods is difficult. 
+3. Our analysis would have been more complete, if we had informaition on actual population. The reason is simple: an earthquake will have more devastating effects in terms of deaths where more people live. Therefore, having something like a rate of death would have been a better and arguably more accurate solution to this problem. In the future, we are considering looking at other databases to check available population data per country. The problem here, again, is the time span these datasets might cover.
+4. While we have only considered deaths, there are other damages an earthquake causes: injuries, missing people, economic consequences. While the earthquake dataset that we originally obtained made an effort of gathering such variables, we observed that in most cases the information was lacking. For the whole dataset that comprised on more than 2000 observations, in most of the cases, we had information on no more than 200 cases for those variables. Therefore, a proper analysis of those variables was not possible or not leading to something of particular interest, given that it might be driven just from a few countries and not for the whole considered in our analysis. We see no other solution than trying to grow the dataset, finding more cases and going back to sources to fill up the empty cases. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
