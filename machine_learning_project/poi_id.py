@@ -3,8 +3,8 @@
 import sys
 import pickle
 import pprint
-sys.path.append("../tools/")
-
+import numpy as np
+sys.path.append("tools/")
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data, test_classifier
 
@@ -12,31 +12,18 @@ from tester import dump_classifier_and_data, test_classifier
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
 features_list = ['poi',
-'bonus', 
-'deferral_payments', 
 'deferred_income', 
-'director_fees',
-'exercised_stock_options',
- 'expenses',
-'from_messages',
-'from_poi_to_this_person',
-'from_this_person_to_poi', 
-'loan_advances', 
-'long_term_incentive',
-'other', 
-'restricted_stock', 
-'restricted_stock_deferred',
-'salary', 
-'shared_receipt_with_poi', 
-'to_messages',
-'total_payments', 
+'long_term_incentive', 
+'total_payments',
 'total_stock_value', 
-"num_confidential", 
-"num_finantial"] # You will need to use more features
+'total_pay_comp', 
+'total_stock_comp',
+'sal_to_bonus']# You will need to use more features
 
 ### Load the dictionary containing the dataset
-with open("final_data_proj.pickle", "r") as data_file:
+with open('final_data_zeros_proj.pickle', "r") as data_file:
     data_dict = pickle.load(data_file)
+
 #
 
 
@@ -44,11 +31,12 @@ with open("final_data_proj.pickle", "r") as data_file:
 ### Task 3: Create new feature(s)
 ### Store to my_dataset for easy export below.
 my_dataset = data_dict
+
+
 #
 #### Extract features and labels from dataset for local testing
 data = featureFormat(my_dataset, features_list, sort_keys = True)
 labels, features = targetFeatureSplit(data)
-
 
 #### Task 4: Try a varity of classifiers
 #### Please name your classifier clf for easy export below.
@@ -67,15 +55,14 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.svm import SVC
 
+features_train_zero, features_test_zero, labels_train_zero, labels_test_zero = train_test_split(features, labels, test_size=0.3, random_state=42)
 
 
-features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size=0.3, random_state=42)
-clf = linear_model.LogisticRegression(C = 40, penalty = "l1")
-clf.fit(features_train,  labels_train)
-pred = clf.predict(features_test)
 
-test_classifier(clf, my_dataset, features_list, folds = 1000)
 
+clf = GaussianNB()
+clf.fit(features_train_zero, labels_train_zero)
+print test_classifier(clf, my_dataset, features_list, folds = 1000)
 
 #
 #### Task 5: Tune your classifier to achieve better than .3 precision and recall 

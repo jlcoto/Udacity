@@ -11774,7 +11774,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[417]:</div>
+<div class="prompt input_prompt">In&nbsp;[565]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -11786,18 +11786,20 @@ div#notebook {
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">patsy</span> <span class="kn">import</span> <span class="n">dmatrix</span><span class="p">,</span> <span class="n">dmatrices</span>
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">linear_model</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">StratifiedShuffleSplit</span>
 <span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
 <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">tree</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">AdaBoostClassifier</span><span class="p">,</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
 <span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
 <span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span><span class="p">,</span> <span class="n">f_classif</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">,</span> <span class="n">accuracy_score</span>
 <span class="kn">from</span> <span class="nn">nltk.stem.snowball</span> <span class="kn">import</span> <span class="n">SnowballStemmer</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s2">&quot;../tools/&quot;</span> <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">tester</span> <span class="kn">import</span> <span class="n">test_classifier</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s2">&quot;/Users/Jose/Documents/Udacity/data_science/intro_machine_learning/ud120-projects/tools&quot;</span> <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">parse_out_email_text</span> <span class="kn">import</span> <span class="n">parseOutText</span>
 </pre></div>
 
@@ -11808,7 +11810,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[418]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Importing dataset intro a pandas dataframe and Transposing it</span>
@@ -11832,11 +11834,11 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[419]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Columns</span>
-<span class="n">data_enron</span><span class="o">.</span><span class="n">columns</span>
+<span class="k">print</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">columns</span>
 </pre></div>
 
 </div>
@@ -11847,10 +11849,8 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[419]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
 <pre>Index([u&#39;bonus&#39;, u&#39;deferral_payments&#39;, u&#39;deferred_income&#39;, u&#39;director_fees&#39;,
        u&#39;email_address&#39;, u&#39;exercised_stock_options&#39;, u&#39;expenses&#39;,
        u&#39;from_messages&#39;, u&#39;from_poi_to_this_person&#39;,
@@ -11858,9 +11858,9 @@ div#notebook {
        u&#39;other&#39;, u&#39;poi&#39;, u&#39;restricted_stock&#39;, u&#39;restricted_stock_deferred&#39;,
        u&#39;salary&#39;, u&#39;shared_receipt_with_poi&#39;, u&#39;to_messages&#39;,
        u&#39;total_payments&#39;, u&#39;total_stock_value&#39;],
-      dtype=&#39;object&#39;)</pre>
+      dtype=&#39;object&#39;)
+</pre>
 </div>
-
 </div>
 
 </div>
@@ -11879,7 +11879,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[420]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
@@ -11893,7 +11893,7 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[420]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[24]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -11912,7 +11912,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[421]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Passing appropriate NaN to dataset</span>
@@ -11937,7 +11937,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[422]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
@@ -11952,11 +11952,11 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[422]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[26]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>&lt;matplotlib.collections.PathCollection at 0x1139ddb10&gt;</pre>
+<pre>&lt;matplotlib.collections.PathCollection at 0x1123d3a50&gt;</pre>
 </div>
 
 </div>
@@ -12076,7 +12076,7 @@ rkJggg==
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[423]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;salary&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -12089,7 +12089,7 @@ rkJggg==
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[424]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">only_numeric</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">data_enron</span><span class="o">.</span><span class="n">dtypes</span> <span class="o">==</span> <span class="s2">&quot;float64&quot;</span><span class="p">]</span> 
@@ -12102,7 +12102,7 @@ rkJggg==
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[425]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
@@ -14327,7 +14327,7 @@ YII=
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[426]:</div>
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">outlier_cleaner</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">):</span>
@@ -14347,7 +14347,7 @@ YII=
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[427]:</div>
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">omitted_variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;director_fees&quot;</span><span class="p">,</span><span class="s2">&quot;loan_advances&quot;</span><span class="p">,</span> <span class="s2">&quot;restricted_stock_deferred&quot;</span><span class="p">]</span>
@@ -16781,6 +16781,278 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[32]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([u&#39;bonus&#39;, u&#39;deferral_payments&#39;, u&#39;deferred_income&#39;, u&#39;director_fees&#39;,
+       u&#39;email_address&#39;, u&#39;exercised_stock_options&#39;, u&#39;expenses&#39;,
+       u&#39;from_messages&#39;, u&#39;from_poi_to_this_person&#39;,
+       u&#39;from_this_person_to_poi&#39;, u&#39;loan_advances&#39;, u&#39;long_term_incentive&#39;,
+       u&#39;other&#39;, u&#39;poi&#39;, u&#39;restricted_stock&#39;, u&#39;restricted_stock_deferred&#39;,
+       u&#39;salary&#39;, u&#39;shared_receipt_with_poi&#39;, u&#39;to_messages&#39;,
+       u&#39;total_payments&#39;, u&#39;total_stock_value&#39;],
+      dtype=&#39;object&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Identifying-other-outliers">Identifying other outliers<a class="anchor-link" href="#Identifying-other-outliers">&#182;</a></h3><p>We also want to validate our points to check if all the data we are going to feed to our algorithms is appropriate.</p>
+<p>As per suggestion, first we will make use of one relevant feature of our data as a way to check if values are correct. In particular, given that we are working with some sort of financial statements, we would have to observe the following:
+<code>'total_payments' = 'salary' + 'bonus' + 'long_term_incentive' + 'deferred_income' + 'deferral_payments' + 'loan_advances' + 'other' + 'expenses' + 'director_fees'</code></p>
+<p>and</p>
+<p><code>'total_stock_value' = 'exercised_stock_options' + 'restricted_stock' + 'restricted_stock_deferred'</code></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[81]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#creating variable for comparison</span>
+<span class="n">sum_var</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;salary&#39;</span><span class="p">,</span> <span class="s1">&#39;bonus&#39;</span><span class="p">,</span><span class="s1">&#39;long_term_incentive&#39;</span><span class="p">,</span> <span class="s1">&#39;deferred_income&#39;</span><span class="p">,</span> <span class="s1">&#39;deferral_payments&#39;</span><span class="p">,</span> <span class="s1">&#39;loan_advances&#39;</span><span class="p">,</span> <span class="s1">&#39;other&#39;</span><span class="p">,</span> <span class="s1">&#39;expenses&#39;</span><span class="p">,</span> <span class="s1">&#39;director_fees&#39;</span><span class="p">]</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_pay_comp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">sum_var</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">difference_indicator</span> <span class="o">=</span> <span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_pay_comp&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_payments&quot;</span><span class="p">]</span>
+<span class="c1">#</span>
+<span class="n">problem_data</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">difference_indicator</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;total_pay_comp&quot;</span><span class="p">,</span> <span class="s2">&quot;total_payments&quot;</span><span class="p">]][:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">,</span> <span class="n">sum_var</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[81]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>salary</th>
+      <th>bonus</th>
+      <th>long_term_incentive</th>
+      <th>deferred_income</th>
+      <th>deferral_payments</th>
+      <th>loan_advances</th>
+      <th>other</th>
+      <th>expenses</th>
+      <th>director_fees</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BELFER ROBERT</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>-102500.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3285.0</td>
+      <td>102500.0</td>
+    </tr>
+    <tr>
+      <th>BHATNAGAR SANJAY</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>137864.0</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We notice that there are probles for two entries. We correct them by looking directly at the values of the fincancial statments and proceed with the correct data entry.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[93]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;deferred_income&quot;</span><span class="p">,</span> <span class="s2">&quot;deferral_payments&quot;</span><span class="p">,</span> <span class="s2">&quot;director_fees&quot;</span><span class="p">,</span> <span class="s2">&quot;expenses&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">102500.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">102500.0</span><span class="p">,</span> <span class="mi">3285</span><span class="p">]</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;other&quot;</span><span class="p">,</span> <span class="s2">&quot;expenses&quot;</span><span class="p">,</span> <span class="s2">&quot;director_fees&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">137864.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_pay_comp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">sum_var</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1">#correcting problem in total_payments</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">,</span><span class="s2">&quot;total_payments&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">,</span><span class="s2">&quot;total_pay_comp&quot;</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We will proceed in the same way for the total stock value:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[98]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">stock_var_sum</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;exercised_stock_options&#39;</span><span class="p">,</span><span class="s1">&#39;restricted_stock&#39;</span><span class="p">,</span><span class="s1">&#39;restricted_stock_deferred&#39;</span><span class="p">]</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_stock_comp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">stock_var_sum</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">difference_indicator_st</span> <span class="o">=</span> <span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_stock_comp&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">data_enron</span><span class="p">[</span><span class="s1">&#39;total_stock_value&#39;</span><span class="p">]</span>
+<span class="n">problem_data</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">difference_indicator_st</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;total_stock_comp&quot;</span><span class="p">,</span><span class="s1">&#39;total_stock_value&#39;</span><span class="p">]][:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">,</span> <span class="n">stock_var_sum</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[98]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>exercised_stock_options</th>
+      <th>restricted_stock</th>
+      <th>restricted_stock_deferred</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>BELFER ROBERT</th>
+      <td>3285.0</td>
+      <td>NaN</td>
+      <td>44093.0</td>
+    </tr>
+    <tr>
+      <th>BHATNAGAR SANJAY</th>
+      <td>2604490.0</td>
+      <td>-2604490.0</td>
+      <td>15456290.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[104]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Correcting wrong entries</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stock_var_sum</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="o">-</span><span class="mf">44093.0</span><span class="p">,</span> <span class="mf">44093.0</span><span class="p">]</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stock_var_sum</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">15456290.0</span><span class="p">,</span> <span class="mf">2604490.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2604490.0</span><span class="p">]</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;total_stock_comp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">stock_var_sum</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1">#Correcting values in original dataset</span>
+<span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">,</span><span class="s1">&#39;total_stock_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">problem_data</span><span class="p">,</span><span class="s2">&quot;total_stock_comp&quot;</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we want to check what kind of people do we have in our data set. A basic thing is if everyone is actually people. As we saw before, there was one (TOTAL) that was clearly not a person. Are there other cases?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note that between the people we have one that is named "THE TRAVEL AGENCY IN THE PARK". We will not remove this observation, because it might give information of a real person that hides under an alias in the statements. On the other hand, checking the financial statements we could see that there was one person with no entries. This person is "Lockhardt, Eugene". We will take it out of our dataset.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[121]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;LOCKHART EUGENE E&quot;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -16796,7 +17068,7 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>In order to provide our algorithm with better features to distinguish between poi/non poi we thought about creating the following features. We assume that given their special influence in the company, poi had access to confidential and private information from clients or the company. We want to leverage this fact by looking into the mails and checking how many mails sent by a person in Enron contain words like classified, confidential, private, intimate, secret.</p>
-<p>We also assume that poi had access to financial statements or shared financial information about the company. We created, thus, a feature that takes this into account. Our script goes throug all of the emails of the people and looks if they contain these key financial words. If an email contains one of these words, we add one to the <code>num_confidential</code> for this person.</p>
+<p>We also assume that poi had access to financial statements or shared financial information about the company. We created, thus, a feature that takes this into account. Our script goes through all of the emails of the people and looks if they contain these key financial words. If an email contains one of these words, we add one to the <code>num_confidential</code> for this person.</p>
 
 </div>
 </div>
@@ -16970,7 +17242,7 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[438]:</div>
+<div class="prompt input_prompt">In&nbsp;[135]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Getting number of confidential mails</span>
@@ -16996,7 +17268,78 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[439]:</div>
+<div class="prompt input_prompt">In&nbsp;[136]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[136]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([u&#39;bonus&#39;, u&#39;deferral_payments&#39;, u&#39;deferred_income&#39;, u&#39;director_fees&#39;,
+       u&#39;email_address&#39;, u&#39;exercised_stock_options&#39;, u&#39;expenses&#39;,
+       u&#39;from_messages&#39;, u&#39;from_poi_to_this_person&#39;,
+       u&#39;from_this_person_to_poi&#39;, u&#39;loan_advances&#39;, u&#39;long_term_incentive&#39;,
+       u&#39;other&#39;, u&#39;poi&#39;, u&#39;restricted_stock&#39;, u&#39;restricted_stock_deferred&#39;,
+       u&#39;salary&#39;, u&#39;shared_receipt_with_poi&#39;, u&#39;to_messages&#39;,
+       u&#39;total_payments&#39;, u&#39;total_stock_value&#39;, u&#39;total_pay_comp&#39;,
+       u&#39;total_stock_comp&#39;],
+      dtype=&#39;object&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Another simple feature that we can construct with the information already given is the percentage of mails receive and sent to pois. This will help us determine how close the relationship between this persons were. We would expect that pois would mail more between each other. Therefore, they will have more mails from and sent to pois.</p>
+<p>Other thing we want to take into account is the ratio of salary to bonus. One can think that pois have higher bonus, therefore the salaries only constitute a small part of their income. This means that their ratio of salary to bonus will be low.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[212]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Pct of messages to poi</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;pct_to_poi&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;from_this_person_to_poi&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;to_messages&#39;</span><span class="p">]</span>
+
+<span class="c1">#Pct of messagges from poi</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;pct_from_poi&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;from_poi_to_this_person&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;from_messages&#39;</span><span class="p">]</span>
+
+<span class="c1">#Ratio salary bonus</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;sal_to_bonus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;salary&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;bonus&#39;</span><span class="p">])</span>
+
+<span class="c1">#Ratio salary to total stock value</span>
+<span class="n">data_enron</span><span class="p">[</span><span class="s2">&quot;sal_to_stock_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;salary&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;total_stock_value&#39;</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[213]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Storing dataset to a pickle file</span>
@@ -17020,7 +17363,7 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[450]:</div>
+<div class="prompt input_prompt">In&nbsp;[214]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Read in pickle stored file</span>
@@ -17034,7 +17377,7 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[445]:</div>
+<div class="prompt input_prompt">In&nbsp;[215]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#number of data points</span>
@@ -17052,8 +17395,8 @@ ERFJoSBZRERERCSFgmQRERERkRQKkkVEREREUvx/kVWtGvlCsMkAAAAASUVORK5CYII=
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Number of observations: 145
-Number of features 23
+<pre>Number of observations: 144
+Number of features 27
 </pre>
 </div>
 </div>
@@ -17074,7 +17417,7 @@ Number of features 23
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[451]:</div>
+<div class="prompt input_prompt">In&nbsp;[216]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;Number of poi: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_enron</span><span class="o">.</span><span class="n">poi</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
@@ -17111,7 +17454,7 @@ Number of features 23
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[452]:</div>
+<div class="prompt input_prompt">In&nbsp;[217]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_enron</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -17125,33 +17468,37 @@ Number of features 23
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[452]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[217]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>bonus                         64
+<pre>bonus                         71
 deferral_payments            107
-deferred_income               97
+deferred_income               95
 director_fees                129
-email_address                 34
-exercised_stock_options       44
-expenses                      51
-from_messages                 59
-from_poi_to_this_person       59
-from_this_person_to_poi       59
-loan_advances                142
-long_term_incentive           80
+email_address                 33
+exercised_stock_options       51
+expenses                      48
+from_messages                 58
+from_poi_to_this_person       58
+from_this_person_to_poi       58
+loan_advances                141
+long_term_incentive           79
 other                         53
 poi                            0
-restricted_stock              36
-restricted_stock_deferred    128
-salary                        51
-shared_receipt_with_poi       59
-to_messages                   59
-total_payments                21
-total_stock_value             20
-num_confidential              59
-num_finantial                 59
+restricted_stock              34
+restricted_stock_deferred    127
+salary                        58
+shared_receipt_with_poi       58
+to_messages                   58
+total_payments                20
+total_stock_value             18
+total_pay_comp                18
+total_stock_comp              16
+pct_to_poi                    58
+pct_from_poi                  58
+sal_to_bonus                  71
+sal_to_stock_value            62
 dtype: int64</pre>
 </div>
 
@@ -17178,10 +17525,11 @@ dtype: int64</pre>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Machine-learning">Machine learning<a class="anchor-link" href="#Machine-learning">&#182;</a></h2><p>Now, we start trying with different machine learning algorithms. For each case, we will select the features we will feed into the algorithm. Additionally, we will adequately split our dataset in training and testing to evaluate the performance of our models and different specifications.</p>
 <p><span style = "color: #A44242"> 
-Note that because the test.py was taking really long to run, we test here using a simple train/test approach. We then select which algorithms we will test with the test.py script.
+Throughout we will try to use test.py to perform our testing. testing.py performs a cross-fold validation. This is needed in our case, because we have a pretty small number of samples. Only in the case where test.py takes too long to run, for example when we are exploring svg, we will perform a simple train/test evaluation.
 </span></p>
-<p>To start with, we need to determine what kind of task we are doing here. It is clear that we are trying to <strong>classify</strong> these people into two groups: poi/non poi. Therefore, we will be giving extra importance to those algorithms like K-Means and SVM that are appropriate for this task.</p>
+<p>To start with, we need to determine what kind of task we are doing here. It is clear that we are trying to <strong>classify</strong> these people into two groups: poi/non poi. Therefore, we will be giving extra importance to those algorithms like SVM and Logistic regression that are appropriate for this task.</p>
 <p>We will proceed in the following way. First, we will make clear what features we will use per each algorithm. Then, we will train the model with our training dataset and see what improvements we can make, refit and evaluate again. As this will be a somewhat reiterative process, we will only present some of the steps in the process. In every case, we will be sure to provide enough reasons to justify our decisions.</p>
+<p>During this process, if needed, we will be creating new features and see how does this impact in our algorithms.</p>
 
 </div>
 </div>
@@ -17191,11 +17539,7 @@ Note that because the test.py was taking really long to run, we test here using 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Naive-Bayes">Naive Bayes<a class="anchor-link" href="#Naive-Bayes">&#182;</a></h3><p>Our benchmark will be a simple naive Bayes. In this case we select the following features:</p>
-<ul>
-<li><code>poi</code>, which is the label we are trying to predict. </li>
-<li><code>salary</code>, <code>bonus</code>, <code>exercised stock option</code>, <code>num_confidential</code>, <code>num_finantial</code>.</li>
-</ul>
+<h2 id="Choosing-features-with-SelectKBest">Choosing features with SelectKBest<a class="anchor-link" href="#Choosing-features-with-SelectKBest">&#182;</a></h2><p>SelectKBest can help us in the process of selecting the features that provide a better classification of poi/non poi. We will be using in order to determine which features we will use for our algorithm.</p>
 
 </div>
 </div>
@@ -17213,7 +17557,7 @@ Note that because the test.py was taking really long to run, we test here using 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[453]:</div>
+<div class="prompt input_prompt">In&nbsp;[218]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Taking out outliers</span>
@@ -17232,21 +17576,100 @@ Note that because the test.py was taking really long to run, we test here using 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>After trying to fit our model, an error because of the use of NaNs was raised. We then, went back and exclude the nans from our dataset. The problem of only considering complete cases, sadly is that we end up with a dataset of 42 observations. In order to preclude this from happening, we impute some values in some of the variables that have the more NaN: <code>num_confidential</code> and <code>num_financial</code>. The NaNs in these cases were cause because there were no mails for these people. We will assume, in this case, that they did not receive any mails with this content. In other words, we will convert the NaNs to zeros.</p>
-<p>After doing this, we observe that our dataset is still really sparse (we only have 54 cases). Therefore, we decide to do the following in order not to loose almost half of our data points. To start, we will use some kind of imputation to take this into account. First, we will impute them with 0. Note that this solution is also implemented in the accompanying code of <code>feature_format</code> provided as part of the project.</p>
+<p>After trying to fit our model, an error because of the use of NaNs was raised. We then, went back and exclude the nans from our dataset. The problem of only considering complete cases, sadly is that we end up with a dataset of 42 observations. In order to preclude this from happening, we impute some values in some of the variables that have the more NaN: num_confidential and num_financial. The NaNs in these cases were cause because there were no mails for these people. We will assume, in this case, that they did not receive any mails with this content. In other words, we will convert the NaNs to zeros.</p>
+<p>After doing this, we observe that our dataset is still really sparse (we only have 54 cases). Therefore, we decide to do the following in order not to loose almost half of our data points. To start, we will use some kind of imputation to take this into account. First, we will impute them with 0. As 0 might not be the perfect number to impute, we also consider other form of imputation, namely, the median. We will call this data sets <code>data_enron_fill_zero</code>, <code>data_enron_fill_median</code>. We will work with both of them to check which one offers better predictions. This way our results are less dependent on the particular form we have selected to fill the nan's.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[454]:</div>
+<div class="prompt input_prompt">In&nbsp;[581]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Filling NaNs</span>
-<span class="n">data_enron_no_nans_zero</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">,</span> <span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">,</span> <span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span>
-<span class="n">data_enron_no_nans_zero</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data_enron_no_nans_zero</span><span class="p">[[</span><span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">data_enron_no_nans_zero</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data_enron_no_nans_zero</span><span class="p">[[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_fill_zeros</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;poi&quot;</span><span class="p">,</span> <span class="s2">&quot;email_address&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">features_names</span> <span class="o">=</span> <span class="n">data_fill_zeros</span><span class="o">.</span><span class="n">columns</span>
+<span class="n">data_fill_medians</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;poi&quot;</span><span class="p">,</span> <span class="s2">&quot;email_address&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">median</span><span class="p">()),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">features_zeros</span> <span class="o">=</span> <span class="n">data_fill_zeros</span><span class="o">.</span><span class="n">values</span>
+<span class="n">features_medians</span> <span class="o">=</span> <span class="n">data_fill_medians</span><span class="o">.</span><span class="n">values</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">poi</span><span class="o">.</span><span class="n">values</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[502]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Selecting K Best for fill zeros</span>
+<span class="n">feature_select</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">feature_fit</span> <span class="o">=</span> <span class="n">feature_select</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_zeros</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">feature_fit</span><span class="o">.</span><span class="n">scores_</span><span class="p">)</span>
+<span class="n">features_selected</span> <span class="o">=</span> <span class="n">features_names</span><span class="p">[</span><span class="n">feature_fit</span><span class="o">.</span><span class="n">get_support</span><span class="p">()]</span>
+<span class="c1">#selecting features</span>
+<span class="n">features_sel_zero</span> <span class="o">=</span> <span class="n">features_zeros</span><span class="p">[:,</span> <span class="n">feature_fit</span><span class="o">.</span><span class="n">get_support</span><span class="p">()]</span>
+<span class="n">features_sel_median</span> <span class="o">=</span> <span class="n">features_medians</span><span class="p">[:,</span> <span class="n">feature_fit</span><span class="o">.</span><span class="n">get_support</span><span class="p">()]</span>
+<span class="k">print</span> <span class="n">features_selected</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[  0.1641645    0.22121448   0.74349339   1.07193488   1.32807283
+   1.69882435   2.11276199   2.42650813   3.52466845   3.55675118
+   4.16908382   4.21988791   5.20965022   5.34494152   5.55068378
+   7.2427304    8.74648553   8.96496396   9.15784421   9.3802368
+   9.3802368   10.07245453  11.56188771  22.78210783  22.78210783]
+Index([u&#39;deferred_income&#39;, u&#39;long_term_incentive&#39;, u&#39;total_payments&#39;,
+       u&#39;total_stock_value&#39;, u&#39;total_pay_comp&#39;, u&#39;total_stock_comp&#39;,
+       u&#39;sal_to_bonus&#39;],
+      dtype=&#39;object&#39;)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using our selectKBest and printing the scores, we see that there is a big jump in the score going from 5.5 to 7.24. Selecting 7 as the cutoff gives us 10 features to consider. We perform the same selection for the data set that was filled with  medians. In the end this did not produced a difference as to which features should be selected.</p>
+<p>After having selected these features for both of our datasets, we start splitting our dataset in training and testing. As usual, we wil use our training to fit our algorithm and the testing will be used for evaluation purposes</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Splitting-training-/-testing">Splitting training / testing<a class="anchor-link" href="#Splitting-training-/-testing">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[505]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features_train_zero</span><span class="p">,</span> <span class="n">features_test_zero</span><span class="p">,</span> <span class="n">labels_train_zero</span><span class="p">,</span> <span class="n">labels_test_zero</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features_sel_zero</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">features_train_median</span><span class="p">,</span> <span class="n">features_test_median</span><span class="p">,</span> <span class="n">labels_train_median</span><span class="p">,</span> <span class="n">labels_test_meadian</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features_sel_median</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -17259,17 +17682,33 @@ Note that because the test.py was taking really long to run, we test here using 
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that there are other types of imputations that are also possible (for example, imputing the median or mean of some value). We will try those after performing our firt fit to see what is the effect.</p>
+<h3 id="Naive-Bayes">Naive Bayes<a class="anchor-link" href="#Naive-Bayes">&#182;</a></h3><p>Our benchmark will be a simple naive Bayes. In this case we select the following features:</p>
+<ul>
+<li><code>poi</code>, which is the label we are trying to predict. </li>
+<li><code>salary</code>, <code>bonus</code>, <code>exercised stock option</code>, <code>num_confidential</code>, <code>num_finantial</code>.</li>
+</ul>
+<p>Note that we will use the tester.py to evaluate our results. For this purpose we pass our two datasets to the corresponding form admitted by this function.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[455]:</div>
+<div class="prompt input_prompt">In&nbsp;[583]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">data_enron_no_nans_zero</span><span class="o">.</span><span class="n">poi</span><span class="o">.</span><span class="n">values</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">data_fill_zeros</span><span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+<span class="n">data_zeros_dict</span> <span class="o">=</span> <span class="n">data_fill_zeros</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+<span class="c1"># passing data_fill_zeros</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;final_data_zeros_proj.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data_zeros_dict</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+    
+<span class="c1"># passing data_median</span>
+<span class="n">data_fill_medians</span><span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
+<span class="n">data_median_dict</span> <span class="o">=</span> <span class="n">data_fill_medians</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;final_data_medians_proj.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data_median_dict</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -17279,43 +17718,128 @@ Note that because the test.py was taking really long to run, we test here using 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[456]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="n">data_enron_no_nans_zero</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">,</span> <span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[457]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Splitting data </span>
-<span class="n">features_train</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">,</span> <span class="n">labels_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[458]:</div>
+<div class="prompt input_prompt">In&nbsp;[584]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Fittiing Gaussian </span>
 <span class="n">clf</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">()</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">accuracy</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_zero</span><span class="p">,</span> <span class="n">labels_train_zero</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_zeros_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GaussianNB(priors=None)
+	Accuracy: 0.85633	Precision: 0.44795	Recall: 0.33350	F1: 0.38234	F2: 0.35146
+	Total predictions: 15000	True positives:  667	False positives:  822	False negatives: 1333	True negatives: 12178
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>While our accuracy is good, this is not a very good evaluation metric for our dataset. As we said before, the problem with this dataset is that we have very few observations. On top, we have very few cases to identify poi. Just by choosing the most common label, we would always have a very high accuracy.</p>
+<p>In this case, is more important to see other metrics, like precision and recall. We will give a proper definition later. Note that so far we have obtained a precision of 0.489 and a recall of 0.400.</p>
+<p>We will do the same process for our dataset that was filled with the medians.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[580]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">()</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_median</span><span class="p">,</span> <span class="n">labels_train_median</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_median_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>GaussianNB(priors=None)
+	Accuracy: 0.85667	Precision: 0.44973	Recall: 0.33550	F1: 0.38431	F2: 0.35346
+	Total predictions: 15000	True positives:  671	False positives:  821	False negatives: 1329	True negatives: 12179
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note that our data set that was filled with the medians has a slightly better recall, however the precision gets better in more than one percentage points. This means that, at least for the Naive Bayes, the dataset that was filled with the medians performs better.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Using-SVC">Using SVC<a class="anchor-link" href="#Using-SVC">&#182;</a></h3><p>In this section we will use a Support Vector Machine algorithm. Notice, however that in this case we need to rescale our features given that for this algorithm distance in different directions is important. Therefore, we will use a min max scaler as a first step.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[451]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features_sel_zero</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[451]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(144, 7)</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -17325,7 +17849,23 @@ Note that because the test.py was taking really long to run, we test here using 
 <div class="prompt input_prompt">In&nbsp;[459]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">accuracy</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Scaling features</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">feature_selection</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">()</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">()</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;feature_selection&#39;</span><span class="p">,</span> <span class="n">feature_select</span><span class="p">),</span> 
+         <span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">scaler</span><span class="p">),</span> 
+         <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)]</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">feature_selection__score_func</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_classif</span><span class="p">],</span>
+                  <span class="n">feature_selection__k</span><span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">23</span><span class="p">],</span>
+                 <span class="n">svc__kernel</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;rbf&quot;</span><span class="p">],</span>
+                 <span class="n">svc__C</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s2">&quot;f1&quot;</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_zeros</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.2f</span><span class="s2">&quot;</span>
+      <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -17336,793 +17876,39 @@ Note that because the test.py was taking really long to run, we test here using 
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[459]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>0.84090909090909094</pre>
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The best parameters are {&#39;feature_selection__k&#39;: 23, &#39;svc__kernel&#39;: &#39;linear&#39;, &#39;feature_selection__score_func&#39;: &lt;function f_classif at 0x10d9ae8c0&gt;, &#39;svc__C&#39;: 10} with a score of 0.12
+</pre>
 </div>
-
 </div>
 
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that our accuracy is quite good. All in all, we can accurately predict 84% of our labels. This is an important benchmark that will consider while working through different models and specifications.</p>
-<p>Now, we want to try the following. First, we want to see how sensitive is our accuracy for each of the features that we include. In other words, does including/excluding such parameters deeply affect our accuracy. Also, we want to work with other type of imputation (imputing the mean).</p>
-<p>For the feature selection we will use the function select K best which will help us clarify the utility of including new features</p>
-
-</div>
-</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[460]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">num_features_space</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">print_conf</span> <span class="o">=</span> <span class="bp">False</span> <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculate performance statistics according to features included/ excluded&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">num_features</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_features</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">feature_select</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">num_features</span><span class="p">)</span>
-        <span class="n">features_new</span> <span class="o">=</span> <span class="n">feature_select</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-        <span class="n">features_train_n</span><span class="p">,</span> <span class="n">features_test_n</span><span class="p">,</span> <span class="n">labels_train_n</span><span class="p">,</span> <span class="n">labels_test_n</span> <span class="o">=</span> \
-            <span class="n">train_test_split</span><span class="p">(</span><span class="n">features_new</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-        <span class="n">clf</span> <span class="o">=</span> <span class="n">algorithm</span>
-        <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_n</span><span class="p">,</span> <span class="n">labels_train_n</span><span class="p">)</span>
-        <span class="n">accuracy</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test_n</span><span class="p">,</span> <span class="n">labels_test_n</span><span class="p">)</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test_n</span><span class="p">)</span>
-        <span class="c1">#if num_features == 1:</span>
-        <span class="c1">#    print features_new</span>
-        <span class="c1">#</span>
-        <span class="k">print</span> <span class="s2">&quot;{} features with accuracy: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s2">&quot;Precision score: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">precision_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">))</span>
-        <span class="k">print</span> <span class="s2">&quot;Recall score: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">recall_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">print_conf</span><span class="p">:</span>
-            <span class="k">print</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test_n</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">15</span> <span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[461]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">num_features_space</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-2 features with accuracy: 0.886363636364
-Precision score: 0.4
-Recall score: 0.5
-===============
-
-3 features with accuracy: 0.886363636364
-Precision score: 0.4
-Recall score: 0.5
-===============
-
-4 features with accuracy: 0.886363636364
-Precision score: 0.4
-Recall score: 0.5
-===============
-
-5 features with accuracy: 0.840909090909
-Precision score: 0.2
-Recall score: 0.25
-===============
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>As we can see from the results, our naive Bayes gets better accuracy when we only use one feature. This feature is <code>exercise_stock</code>. Adding the rest of features always has the effect of decreasing our accuracy. This is an important fact that we will use in what follows.</p>
-<p>Next we want to try other ways of imputing our NaNs for <code>salary</code>, <code>bonus</code> and <code>exercised_stock_options</code>. In particular we will use the median values. We use the median given that the means may be affected by extreme values.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[462]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Imputing medians</span>
-<span class="n">data_enron_no_nans_means</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">,</span> <span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">,</span> <span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span>
-<span class="n">data_enron_no_nans_means</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data_enron_no_nans_means</span><span class="p">[[</span><span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">data_enron_no_nans_means</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data_enron_no_nans_means</span><span class="p">[[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">median</span><span class="p">()),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[463]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">poi</span><span class="o">.</span><span class="n">values</span>
-<span class="n">features</span> <span class="o">=</span> <span class="n">data_enron_no_nans_means</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s2">&quot;salary&quot;</span><span class="p">,</span> <span class="s2">&quot;bonus&quot;</span><span class="p">,</span> <span class="s2">&quot;exercised_stock_options&quot;</span><span class="p">,</span> <span class="s2">&quot;num_confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;num_finantial&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[464]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features_train</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">,</span> <span class="n">labels_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[465]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Fittiing Gaussian </span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">()</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">accuracy</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>
-<span class="n">accuracy</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[465]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>0.86363636363636365</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[466]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">num_features_space</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-2 features with accuracy: 0.886363636364
-Precision score: 0.4
-Recall score: 0.5
-===============
-
-3 features with accuracy: 0.886363636364
-Precision score: 0.4
-Recall score: 0.5
-===============
-
-4 features with accuracy: 0.886363636364
-Precision score: 0.4
-Recall score: 0.5
-===============
-
-5 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>By imputing the median instead of the mean we, generally have better predictions. However, note that our benchmark is unaffected. In other words, our best accuracy is the same as we had before. We reach it, once again, only considering one parameter. However, we get better precision and recall in some cases.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Using-extra-features">Using extra features<a class="anchor-link" href="#Using-extra-features">&#182;</a></h3><p>Now we will use extra features and see if this helps to better predict our labels. We will fill NaNs with zeros in order not to loose most of our observations</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[467]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Filling empty data</span>
-<span class="n">all_data_fill_zeros</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;poi&quot;</span><span class="p">,</span> <span class="s2">&quot;email_address&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
-<span class="n">features</span> <span class="o">=</span> <span class="n">all_data_fill_zeros</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[468]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">labels</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">poi</span><span class="o">.</span><span class="n">values</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[469]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features_train</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">,</span> <span class="n">labels_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[470]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">num_features</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[471]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">num_features_space</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">GaussianNB</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-2 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-3 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-4 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-5 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-6 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-7 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-8 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-9 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-10 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-11 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-12 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-13 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-14 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-15 features with accuracy: 0.886363636364
-Precision score: 0.333333333333
-Recall score: 0.25
-===============
-
-16 features with accuracy: 0.840909090909
-Precision score: 0.2
-Recall score: 0.25
-===============
-
-17 features with accuracy: 0.840909090909
-Precision score: 0.2
-Recall score: 0.25
-===============
-
-18 features with accuracy: 0.863636363636
-Precision score: 0.333333333333
-Recall score: 0.5
-===============
-
-19 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-20 features with accuracy: 0.863636363636
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-21 features with accuracy: 0.818181818182
-Precision score: 0.166666666667
-Recall score: 0.25
-===============
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>It is really interesting to observe once again that we have the better accuracy when we only use one future. Also we discover an interesting thing. This is a feature we had not include in our first analysis.</p>
-<p>After some inspection we realize that the feature is <code>total_stock_value</code>. Just by using this feature with a Naive Bayes we get a 93% accuracy. This is the model that we select from the Naive Bayes.</p>
-<p>Now that we know that our model predicts good the test labels, we want to use other measures to have a better grasp on how well this classification is. Suppose, for example, that each person that might be identified as a potential poi will be further screened. This will imply high cost for the administration and for the person if they are incorrectly labeled like that. On the other hand, in terms of justice, we want to make sure that all of the persons that had been involved in this scandal will be prosecuted. Depending on which costs we want to minimize we might be looking at precision or recall.</p>
-<p><strong>Precision</strong>, in this case, refers the ability of our algorithm to identify those that are truly persons of interest. A good precision means that everytime someone is labeled as a poi by our algorithm we have high confidence that in fact it is a poi.</p>
-<p><strong>Recall</strong> refers to the ability of our algorithm to identify all of those poi in our dataset. A good recall gives us the confidence that if we have a poi in our dataset, it will not be ignored by our algorithm.</p>
-<p>Unfortunately, precision and recall sometimes do not go hand in hand. To see this, consider an example where our algorithm labels all as poi. The recall will be perfect. All of the poi in our dataset were correctly identified. On the other hand, the precision is terrible, given that this algorithm does not give us the confidence that someone labeled as poi is actually such. On the other hand we might have an algorithm that is very precise: once someone is taken to be a poi we are very confident that it is actually is. However, this confidence might come at a cost of not being able to identify all of the actual poi in our dataset, rendering our recall low.</p>
-<p>We will now check this numbers for our naive Bayes algorithm. We will use the model with the highest accuracy and calculate its precision and recall.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[472]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;total_stock_value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">features_train</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">,</span> <span class="n">labels_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[473]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Fittiing Gaussian </span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">()</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">accuracy</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="n">accuracy</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[473]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>0.93181818181818177</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[474]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[474]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([[40,  0],
-       [ 3,  1]])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>From the results we see that we do quite a good job classifying those persons that are not poi. However, in the case of non poi our classification algorithm does not do that well. Though we do not have false positives, giving us a perfect precision, our recall is, arguably, not the best. 3 poi are not correctly identified. In what follow we show the exact precision and recall scores.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[475]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">print</span> <span class="s2">&quot;Precision score: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">precision_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">))</span>
-<span class="k">print</span> <span class="s2">&quot;Recall score: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">recall_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Precision score: 1.0
-Recall score: 0.25
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>After checking that our recall was not the best, we went back and modified our original function. In the end, it turns out that the feature specification that achieves more balance between recall and precision is the one that has 15 feaures. We have here a recall and precision of 0.5. Still, for us to check is if there are other algorithms that might offer us a better performance.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Using-K-Means">Using K-Means<a class="anchor-link" href="#Using-K-Means">&#182;</a></h2><p>K-means is another algortithm that can help us in the process of classifying. In order to apply K-Means, however, it is important that our paremeters are scaled. We will perform this preprocessing stage before jumping to the fitting part and evaluation part.</p>
-<p>We will use the same dataset where we filled our NaNs with zeros.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[476]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="n">all_data_fill_zeros</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>To start with, we will use all of the features for fitting a K-Means algorithm. As we will soon realize, this might not give the best predictions. Algorithms like K-Means has problems for classification when the parameter space grows.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[477]:</div>
-<div class="inner_cell">
-    <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Scaling features</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">feature_selection</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">()</span>
 <span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
-<span class="n">rescaled</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[478]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features_train</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">,</span> <span class="n">labels_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">rescaled</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[479]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_init</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="n">kmeans</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[479]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>KMeans(algorithm=&#39;auto&#39;, copy_x=True, init=&#39;k-means++&#39;, max_iter=300,
-    n_clusters=2, n_init=20, n_jobs=1, precompute_distances=&#39;auto&#39;,
-    random_state=None, tol=0.0001, verbose=0)</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="Evaluating-results">Evaluating results<a class="anchor-link" href="#Evaluating-results">&#182;</a></h4><p>From the scores we got below we can see that our performance is quite poor. If we check our predictions, the algorithm classifies everyone as non poi, the category for which we have more points. Our algorithm does not do better than our most simple benchmark: just giving everyone the mos common label. As a result, we have a accuracy and recall of 0. Let's see if we can do better once we reduce the dimensionality of our feature space.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[480]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">kmeans</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[480]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>-14.458249877640039</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[481]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">pred</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[482]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[482]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([[ 8, 32],
-       [ 4,  0]])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Reducing-the-parameter-space">Reducing the parameter space<a class="anchor-link" href="#Reducing-the-parameter-space">&#182;</a></h3><p>We apply the function <code>num_features_space</code> to check how many features we need to include to have a better accuracy.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[483]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">num_features</span> <span class="o">=</span> <span class="n">rescaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">num_features_space</span><span class="p">(</span><span class="n">rescaled</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_init</span> <span class="o">=</span> <span class="mi">40</span><span class="p">))</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">()</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;feature_selection&#39;</span><span class="p">,</span> <span class="n">feature_select</span><span class="p">),</span> 
+         <span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="n">scaler</span><span class="p">),</span> 
+         <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)]</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">feature_selection__score_func</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_classif</span><span class="p">],</span>
+                  <span class="n">feature_selection__k</span><span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">23</span><span class="p">],</span>
+                 <span class="n">svc__kernel</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;rbf&quot;</span><span class="p">],</span>
+                 <span class="n">svc__C</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s2">&quot;f1&quot;</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_medians</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.2f</span><span class="s2">&quot;</span>
+      <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -18135,111 +17921,7 @@ Recall score: 0.25
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>1 features with accuracy: -0.123913164799
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-2 features with accuracy: -0.939177668884
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-3 features with accuracy: -1.23520730539
-Precision score: 0.333333333333
-Recall score: 0.25
-===============
-
-4 features with accuracy: -1.63718418709
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-5 features with accuracy: -1.90619503481
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-6 features with accuracy: -3.42638202627
-Precision score: 0.2
-Recall score: 0.25
-===============
-
-7 features with accuracy: -4.06236382803
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-8 features with accuracy: -4.09152135349
-Precision score: 0.25
-Recall score: 0.25
-===============
-
-9 features with accuracy: -4.91609138165
-Precision score: 0.0285714285714
-Recall score: 0.25
-===============
-
-10 features with accuracy: -5.66575229623
-Precision score: 0.272727272727
-Recall score: 0.75
-===============
-
-11 features with accuracy: -6.50611656589
-Precision score: 0.363636363636
-Recall score: 1.0
-===============
-
-12 features with accuracy: -6.61980216119
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-13 features with accuracy: -7.14000614498
-Precision score: 0.333333333333
-Recall score: 1.0
-===============
-
-14 features with accuracy: -8.66477923894
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-15 features with accuracy: -10.9008471323
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-16 features with accuracy: -12.0141337636
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-17 features with accuracy: -12.3311048469
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-18 features with accuracy: -12.7154204423
-Precision score: 0.333333333333
-Recall score: 1.0
-===============
-
-19 features with accuracy: -12.9784731142
-Precision score: 0.333333333333
-Recall score: 1.0
-===============
-
-20 features with accuracy: -13.6513302888
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-21 features with accuracy: -14.4582498776
-Precision score: 0.0
-Recall score: 0.0
-===============
-
+<pre>The best parameters are {&#39;feature_selection__k&#39;: 23, &#39;svc__kernel&#39;: &#39;linear&#39;, &#39;feature_selection__score_func&#39;: &lt;function f_classif at 0x10d9ae8c0&gt;, &#39;svc__C&#39;: 10} with a score of 0.14
 </pre>
 </div>
 </div>
@@ -18253,331 +17935,8 @@ Recall score: 0.0
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that in all of the cases, our results are not that different than the ones obtained with our Gaussian approach. Now, we want to try other thing to see if this improves our scores. As we mentioned K-means classification suffers from the <a href="https://en.wikipedia.org/wiki/Curse_of_dimensionality">dimensionality curse</a>. Therefore, we need to reduce or feature space to have better predictions. Normally, reducing the feature space means loosing information, however, we can use principal components in order to maintain the best information of all of our data.</p>
-<p><span style = "color: #A44242"> 
-Note that we could not use K-Means with the testing script. Our best performing algorithm never converged when using test.py.
-</span></p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Using-PCA-with-K-Means">Using PCA with K-Means<a class="anchor-link" href="#Using-PCA-with-K-Means">&#182;</a></h3><p>Here, as a preprocessing stage, we will use PCA to obtain a variable that captures most of the information of our dataset. We will then use this variable for classification purposes.</p>
-<p>For that purpose we will use a pipeline. First we will perform this preprocessing stage and then we will feed it to our classifier.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[484]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">pca_kmeans</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">PCA</span><span class="p">()),</span>
-        <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">KMeans</span><span class="p">())])</span>
-<span class="n">pca_kmeans</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">pca__n_components</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">clf__n_clusters</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">clf__n_init</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">)</span>
-<span class="n">pca_kmeans</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>  
-<span class="n">pred</span> <span class="o">=</span> <span class="n">pca_kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[484]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([[ 8, 32],
-       [ 4,  0]])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that our attempt of using PCA as a preprocessing step was rather unseccussful. Our classification still yields the same result as when we used all of the features using K-Means, namely that all of the subjects belong to the non poi class. Next, we will use SVM to see if our results improve.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Using-SVM">Using SVM<a class="anchor-link" href="#Using-SVM">&#182;</a></h2><p>We now use a SVM for classification purposes. As we did before, we will start training the SVM with all of our dataset and check the results we obtained.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[485]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span> <span class="o">=</span> <span class="s2">&quot;rbf&quot;</span><span class="p">)</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[485]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-  decision_function_shape=None, degree=3, gamma=&#39;auto&#39;, kernel=&#39;rbf&#39;,
-  max_iter=-1, probability=False, random_state=None, shrinking=True,
-  tol=0.001, verbose=False)</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[486]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[486]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([[40,  0],
-       [ 4,  0]])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[487]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Using grid search for tunning parameters</span>
-<span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kernel&#39;</span><span class="p">:(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;rbf&#39;</span><span class="p">),</span> <span class="s1">&#39;C&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]}</span>
-<span class="n">svr</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">()</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">svr</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[487]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>array([[38,  2],
-       [ 3,  1]])</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We'll use the same method as before going through our parameters to determine which is the best combination.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[488]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">num_features</span> <span class="o">=</span> <span class="n">rescaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">num_features_space</span><span class="p">(</span><span class="n">rescaled</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span> <span class="o">=</span> <span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">100</span><span class="p">))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1 features with accuracy: 0.909090909091
-Precision score: 0.0
-Recall score: 0.0
-===============
-
-2 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-3 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-4 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-5 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-6 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-7 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-8 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-9 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-10 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-11 features with accuracy: 0.931818181818
-Precision score: 1.0
-Recall score: 0.25
-===============
-
-12 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-13 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-14 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-15 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.25
-===============
-
-16 features with accuracy: 0.886363636364
-Precision score: 0.333333333333
-Recall score: 0.25
-===============
-
-17 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.5
-===============
-
-18 features with accuracy: 0.886363636364
-Precision score: 0.333333333333
-Recall score: 0.25
-===============
-
-19 features with accuracy: 0.931818181818
-Precision score: 0.666666666667
-Recall score: 0.5
-===============
-
-20 features with accuracy: 0.931818181818
-Precision score: 0.666666666667
-Recall score: 0.5
-===============
-
-21 features with accuracy: 0.909090909091
-Precision score: 0.5
-Recall score: 0.5
-===============
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>After performing different options, our best performing algorithm is a SVM with 19-20 features. Note, also, that this specification uses a linear kernel. We tried with different rbf kernels, but the performance of the linear was always superior.</p>
-<p><span style = "color: #A44242"> 
-Note that we could not use SVM with the testing script. Our best performing algorithm never converged when using test.py.
-</span></p>
+<p>In our Support Vector Machine models we have use a pipeline in order to select features and perform the corresponding transformations. We then use a GridSearch. Gridsearch allow us to go through different paremeters specifications, selecting the one that provides better scoring. In order to use the same testing as the one perform by tester.py we have used a Stratified Shuffle split with 1000 folds.</p>
+<p>We have selected as our scoring function the f1, as the one we are looking to maximize. Note that the f1 is a weighted average of the precision and recall scores.</p>
 
 </div>
 </div>
@@ -18588,34 +17947,27 @@ Note that we could not use SVM with the testing script. Our best performing algo
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Using-Logit">Using Logit<a class="anchor-link" href="#Using-Logit">&#182;</a></h2><p>Logit algorithms can also help us in the process of classification. Logit, additionally assigns a probabity to each of our predictions based on the certainty of the label assigned. This can be useful for selecting different decision thresholds.</p>
+<p>We will use the same strategy as before: mainly, we will use a pipeline to perform parameter selection and GridSearch to try different combination of parameters. We will do this for both of our data sets, the ones filled with zeros, and the ones with medians.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[489]:</div>
+<div class="prompt input_prompt">In&nbsp;[465]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">features_train</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">,</span> <span class="n">labels_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[490]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">LogisticRegression</span><span class="p">()</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">feature_selection</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">()</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">LogisticRegression</span><span class="p">()</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;log_reg&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)]</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">log_reg__penalty</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">],</span>
+                 <span class="n">log_reg__C</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">])</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s2">&quot;recall&quot;</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_zeros</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.2f</span><span class="s2">&quot;</span>
+      <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -18628,8 +17980,40 @@ Note that we could not use SVM with the testing script. Our best performing algo
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>0.166666666667
-0.25
+<pre>The best parameters are {&#39;log_reg__C&#39;: 15, &#39;log_reg__penalty&#39;: &#39;l1&#39;} with a score of 0.26
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[488]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">LogisticRegression</span><span class="p">()</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;penalty&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="s2">&quot;l2&quot;</span><span class="p">),</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="s2">&quot;tol&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.001</span><span class="p">]}</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s2">&quot;precision&quot;</span><span class="p">,)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_medians</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.2f</span><span class="s2">&quot;</span>
+      <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The best parameters are {&#39;penalty&#39;: &#39;l1&#39;, &#39;C&#39;: 5, &#39;tol&#39;: 0.001} with a score of 0.29
 </pre>
 </div>
 </div>
@@ -18643,84 +18027,7 @@ Note that we could not use SVM with the testing script. Our best performing algo
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Our first result is not really impressive. Our precision and recall scores are way down from what we have already got. We can tune in some parameters to see if we can do better than this. In particular we will tune the regularization parameter (which will determine which features will be included) and the C parameter.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[491]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;penalty&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span><span class="s2">&quot;l2&quot;</span><span class="p">),</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">)}</span>
-<span class="n">log_reg</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">LogisticRegression</span><span class="p">()</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">log_reg</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.886363636364
-0.428571428571
-0.75
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[492]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span><span class="o">.</span><span class="n">best_params_</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt output_prompt">Out[492]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{&#39;C&#39;: 40, &#39;penalty&#39;: &#39;l1&#39;}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that we get our best precision and recall with the parameters shown above. Particularly, this algorithm is good as singling persons as poi, i.e. it has a good recall. The problem is that this is at expense of a good precision. Probably, what is happening is that the algorithm is singling out more people as poi as it should be. Still, it is interesting that with a simple algorithm like a logistic regression we got to have good results. Note however, that in terms of accuracy, this algorithm does poorly than the other. I think the reason behind this number is that this algorithm has more false positive than the rest. Therefore, given that it is assigning the poi label more frequently than the rest, it is not surprise that its accuracy is lower, if we consider that we have a quite inbalance dataset.</p>
-<p><strong>This is the specification we used for testing it with testing.py</strong></p>
+<p>Still, our algorithm does not take us quite there were we wanted. Our recall does not hit the more than 30% mark, as wanted. Therefore, we will try with other algorithms. Note that we tried for the second with scaling options, but it yielded a lower score than using no scaling at all.</p>
 
 </div>
 </div>
@@ -18737,16 +18044,22 @@ Note that we could not use SVM with the testing script. Our best performing algo
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[493]:</div>
+<div class="prompt input_prompt">In&nbsp;[489]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">()</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">()</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;feature_selection&#39;</span><span class="p">,</span> <span class="n">feature_select</span><span class="p">),</span> 
+         <span class="p">(</span><span class="s1">&#39;my_tree&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)]</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">feature_selection__score_func</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_classif</span><span class="p">],</span>
+                  <span class="n">feature_selection__k</span><span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">23</span><span class="p">],</span>
+                 <span class="n">my_tree__min_samples_split</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">])</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s2">&quot;f1&quot;</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_zeros</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.2f</span><span class="s2">&quot;</span>
+      <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -18759,11 +18072,7 @@ Note that we could not use SVM with the testing script. Our best performing algo
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[[36  4]
- [ 3  1]]
-0.840909090909
-0.2
-0.25
+<pre>The best parameters are {&#39;feature_selection__k&#39;: 2, &#39;feature_selection__score_func&#39;: &lt;function f_classif at 0x10d9ae8c0&gt;, &#39;my_tree__min_samples_split&#39;: 15} with a score of 0.21
 </pre>
 </div>
 </div>
@@ -18784,18 +18093,21 @@ Note that we could not use SVM with the testing script. Our best performing algo
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[494]:</div>
+<div class="prompt input_prompt">In&nbsp;[498]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;min_samples_split&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">70</span><span class="p">),</span> <span class="s1">&#39;random_state&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">42</span><span class="p">])}</span>
-<span class="n">dec_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">()</span>
-<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">dec_tree</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">&quot;precision&quot;</span><span class="p">)</span>
-<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train</span><span class="p">,</span> <span class="n">labels_train</span><span class="p">)</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">labels_test</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">()</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;feature_selection&#39;</span><span class="p">,</span> <span class="n">feature_select</span><span class="p">),</span> 
+         <span class="p">(</span><span class="s1">&#39;my_tree&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)]</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">feature_selection__score_func</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_classif</span><span class="p">],</span>
+                  <span class="n">feature_selection__k</span><span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                 <span class="n">my_tree__min_samples_split</span> <span class="o">=</span> <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span> <span class="o">=</span> <span class="s2">&quot;recall&quot;</span><span class="p">)</span>
+<span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_medians</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The best parameters are </span><span class="si">%s</span><span class="s2"> with a score of </span><span class="si">%0.2f</span><span class="s2">&quot;</span>
+      <span class="o">%</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">best_score_</span><span class="p">))</span>
 </pre></div>
 
 </div>
@@ -18808,11 +18120,7 @@ Note that we could not use SVM with the testing script. Our best performing algo
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[[37  3]
- [ 2  2]]
-0.886363636364
-0.4
-0.5
+<pre>The best parameters are {&#39;feature_selection__k&#39;: 2, &#39;feature_selection__score_func&#39;: &lt;function f_classif at 0x10d9ae8c0&gt;, &#39;my_tree__min_samples_split&#39;: 20} with a score of 0.19
 </pre>
 </div>
 </div>
@@ -18823,10 +18131,13 @@ Note that we could not use SVM with the testing script. Our best performing algo
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[495]:</div>
+<div class="prompt input_prompt">In&nbsp;[551]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span><span class="o">.</span><span class="n">best_params_</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_zero</span><span class="p">,</span> <span class="n">labels_train_zero</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_zeros_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -18837,13 +18148,55 @@ Note that we could not use SVM with the testing script. Our best performing algo
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[495]:</div>
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>DecisionTreeClassifier(class_weight=None, criterion=&#39;gini&#39;, max_depth=None,
+            max_features=None, max_leaf_nodes=None,
+            min_impurity_split=1e-07, min_samples_leaf=1,
+            min_samples_split=5, min_weight_fraction_leaf=0.0,
+            presort=False, random_state=None, splitter=&#39;best&#39;)
+	Accuracy: 0.82040	Precision: 0.27141	Recall: 0.20600	F1: 0.23422	F2: 0.21643
+	Total predictions: 15000	True positives:  412	False positives: 1106	False negatives: 1588	True negatives: 11894
 
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{&#39;min_samples_split&#39;: 2, &#39;random_state&#39;: 42}</pre>
+</pre>
+</div>
 </div>
 
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[562]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_median</span><span class="p">,</span> <span class="n">labels_train_median</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_median_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>DecisionTreeClassifier(class_weight=None, criterion=&#39;gini&#39;, max_depth=None,
+            max_features=None, max_leaf_nodes=None,
+            min_impurity_split=1e-07, min_samples_leaf=1,
+            min_samples_split=4, min_weight_fraction_leaf=0.0,
+            presort=False, random_state=None, splitter=&#39;best&#39;)
+	Accuracy: 0.79660	Precision: 0.22063	Recall: 0.20750	F1: 0.21386	F2: 0.21000
+	Total predictions: 15000	True positives:  415	False positives: 1466	False negatives: 1585	True negatives: 11534
+
+</pre>
+</div>
 </div>
 
 </div>
@@ -18855,7 +18208,7 @@ Note that we could not use SVM with the testing script. Our best performing algo
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>After trying with different specification and parameters, it is possible to see that we cannot achieve good precision nor recall. Note also that we do not achieve accuracy levels as we had with SVM.</p>
+<p>Once again, our algorithm performs lower than we wanted to. We will try to get better scores using an Ada Boost Tree that prevents overfitting.</p>
 
 </div>
 </div>
@@ -18865,117 +18218,215 @@ Note that we could not use SVM with the testing script. Our best performing algo
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Questionnaire---Conclusions">Questionnaire - Conclusions<a class="anchor-link" href="#Questionnaire---Conclusions">&#182;</a></h2><p>Having gone through multiple algorithms, their pros - cons and tunned their parameters, we can select the algorithm that better performed on our data. This is the SVM with 19 or 20 features. We will go through the process of how we came to that conclusion by answering the questions given for the project:</p>
+<h3 id="Using-Ada-Boost">Using Ada Boost<a class="anchor-link" href="#Using-Ada-Boost">&#182;</a></h3><p>We will use another form of classification. This time we will use Ada Boost, which corrects for overfitting that is sometimes present in Decision Trees.</p>
+<p>For this case, we will use the first features that we selected for our Naive Bayes classification.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[563]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">AdaBoostClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_zero</span><span class="p">,</span> <span class="n">labels_train_zero</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_zeros_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>AdaBoostClassifier(algorithm=&#39;SAMME.R&#39;, base_estimator=None,
+          learning_rate=1.0, n_estimators=75, random_state=None)
+	Accuracy: 0.81913	Precision: 0.21995	Recall: 0.14000	F1: 0.17110	F2: 0.15098
+	Total predictions: 15000	True positives:  280	False positives:  993	False negatives: 1720	True negatives: 12007
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[507]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">AdaBoostClassifier</span><span class="p">()</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_median</span><span class="p">,</span> <span class="n">labels_train_median</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_median_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>AdaBoostClassifier(algorithm=&#39;SAMME.R&#39;, base_estimator=None,
+          learning_rate=1.0, n_estimators=50, random_state=None)
+	Accuracy: 0.80960	Precision: 0.21618	Recall: 0.16300	F1: 0.18586	F2: 0.17143
+	Total predictions: 15000	True positives:  326	False positives: 1182	False negatives: 1674	True negatives: 11818
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Using-Random-Forest">Using Random Forest<a class="anchor-link" href="#Using-Random-Forest">&#182;</a></h2><p>As a last resource, we will use random forest to see if we can get better results so far. Till now, we have not being able to beat the result we had with naive Bayes. Again, random forests prevents from some of the overfitting problems that occur with decision trees.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[575]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_zero</span><span class="p">,</span> <span class="n">labels_train_zero</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_zeros_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&#39;gini&#39;,
+            max_depth=None, max_features=&#39;auto&#39;, max_leaf_nodes=None,
+            min_impurity_split=1e-07, min_samples_leaf=1,
+            min_samples_split=20, min_weight_fraction_leaf=0.0,
+            n_estimators=10, n_jobs=1, oob_score=False, random_state=None,
+            verbose=0, warm_start=False)
+	Accuracy: 0.85973	Precision: 0.41975	Recall: 0.13600	F1: 0.20544	F2: 0.15726
+	Total predictions: 15000	True positives:  272	False positives:  376	False negatives: 1728	True negatives: 12624
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[578]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">min_samples_split</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features_train_median</span><span class="p">,</span> <span class="n">labels_train_median</span><span class="p">)</span>
+<span class="n">features_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poi&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)</span>
+<span class="n">test_classifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">data_median_dict</span><span class="p">,</span> <span class="n">features_list</span><span class="p">,</span> <span class="n">folds</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>RandomForestClassifier(bootstrap=True, class_weight=None, criterion=&#39;gini&#39;,
+            max_depth=None, max_features=&#39;auto&#39;, max_leaf_nodes=None,
+            min_impurity_split=1e-07, min_samples_leaf=1,
+            min_samples_split=5, min_weight_fraction_leaf=0.0,
+            n_estimators=10, n_jobs=1, oob_score=False, random_state=None,
+            verbose=0, warm_start=False)
+	Accuracy: 0.85047	Precision: 0.36750	Recall: 0.16850	F1: 0.23106	F2: 0.18896
+	Total predictions: 15000	True positives:  337	False positives:  580	False negatives: 1663	True negatives: 12420
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In the end, using Random Forest didn't make much of a difference in terms of getting better precision or recall.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Questionnaire---Conclusions">Questionnaire - Conclusions<a class="anchor-link" href="#Questionnaire---Conclusions">&#182;</a></h2><p>Having gone through multiple algorithms, their pros - cons and tunned their parameters, we can select the algorithm that better performed on our data. Ironically, our best performing algorithm is one of the simplest ones: the Naive Bayes.</p>
 <ol>
 <li><p>As we mentioned in the introduction machine learning offers the ability of learning from patterns in the data in order to give informed predictions. We have worked here with the Enron data set. This data set contained financial information about the company and other information obtained through a series of mails that the justice made available to the public. The Enron case is one of the most known corporate fraud cases. Knowing the patterns of the fraud can help us predict it in the future. In our case, however, the predictive task was simpler. We were given a list of persons that were connected to Enron, and we wanted to determine if these persons could be catalogued as a person of interest. We used the futures in our dataset to perform classifications. During this process we were careful not to use all of the data points, given that some of them could introduce some unwanted bias.</p>
 </li>
-<li><p>We used the features identified by our SelectKBest algorithm. In the end, either with 19 or 20 features we have the same results. Note that we needed to perform some scaling. In particular, we used the min/max scaling. Scaling is particular important with algorithms like SVM and KMeans given that they essentially are taking the distance in all of the relevant dimensions into account. Note that we also engineered two features processing the mails given. The steps and rationale behind those features were explained above. We will report the feature score for our SVM with 19 features.</p>
+<li><p>We used the features identified by our SelectKBest algorithm. In the end, we selected 7 features that have the highest scores. These features are: 'deferred_income', 'long_term_incentive', 'total_payments', 'total_stock_value', 'total_pay_comp', 'total_stock_comp','sal_to_bonus'. We also perform some scaling in the cases where it was needed. In particular, we used the min/max scaling. Scaling is particular important with algorithms like SVM and KMeans given that they essentially are taking the distance in all of the relevant dimensions into account. Note that we also engineered two features processing the mails given. We also engineered some extra features with the data given. For example, the proportion of mails received from poi and sent to the poi. Another thing we wanted to take into consideration was the difference between salaries to bonus and salaries to total stocks. The reason behind this was that most of pois income may come from these extra perks and not salary. We use a logarithmic scale, because this had a better score when selecting features.</p>
 </li>
 </ol>
 
 </div>
 </div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[496]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#Getting data</span>
-<span class="c1">#features_train, features_test, labels_train, labels_test = train_test_split(rescaled, labels, test_size=0.3, random_state=42)</span>
-<span class="n">feature_select</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">19</span><span class="p">)</span>
-<span class="n">feature_fit</span> <span class="o">=</span> <span class="n">feature_select</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">feature_fit</span><span class="o">.</span><span class="n">scores_</span>
-<span class="n">features_transf</span> <span class="o">=</span> <span class="n">feature_fit</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">rescaled</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area"><div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>[  6.27269281   0.20970584  11.73269808   2.0893099    8.52197316
-   6.37461449   0.15877024   5.44668748   2.47052122   7.30140665
-  10.22290421   4.26357664   9.4807432    0.06447703   3.90948523
-   8.90382156   1.75169428   8.96781935  24.75252302   0.27850098
-   0.08238117]
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As seen above, we choose 19 because it gave us the best recall/precision values. We will later discuss this. An important thing to notice is that, sadly, our engineered parameters did not receive a high score. It appears that they have little classification power for our task.</p>
+<p>As seen above, we choose 7 because it gave us good precision/recall values with the algorithms selected. Note, however, that througout our code, we also try with different values of K. In particular we do this for SVM, Logit, Decision Trees. In all of the cases we also tuned different parameters. However, in the end, we do not get better results than with our naive Bayes.</p>
 <ol>
-<li><p>As it is possible to see throughout this report, we considered multiple algorithms and tune their parameters. We also compared between our algorithms using different evaluation metrics, as accuracy, precision and recall. In the end we choose the algorithm that offers the best precision and recall scores. This algorithm is the support vector machine with a linear kernel and 19 features. Note that the one with 20 features also offers the same performance, however applying Occam's razor, we select the one with 19 features. <em>Note that we were not able to evaluate our best performing algorithm with the test.py script because it did not converged. We used instead for evaluation purposes the logistic regression.</em></p>
+<li><p>As it is possible to see throughout this report, we considered multiple algorithms and tune their parameters. We also compared between our algorithms using different evaluation metrics, as accuracy, precision and recall. In the end we choose the algorithm that offers the best precision and recall scores. We do this for two of our datasets, the one where we imputed the blank values with zero and the ones with medians. In both cases we get a precision of over 44% and a recall of over 33%.</p>
 </li>
-<li><p>Tunning the parameters of the algorithm means changing some of its specifications. Tunning is important because it help us in the quest of finding an appropriate balance between bias and variance. In our case, where appropriate, we have tunned our algorithm. For example, we found the one that offers better performance playing with different parameters of the support vector machine algorithm. An important parameter for that algorithm is the kernel. We used linear and rbf kernels and also tuned the parameter C, which help us control for overfitting. In the end, the algorithm that performed better was the one with a linear kernel.</p>
+<li><p>Tunning the parameters of the algorithm means changing some of its specifications. Tunning is important because it help us in the quest of finding an appropriate balance between bias and variance. In our case, where appropriate, we have tunned different parameters of our algorithms. For example, we have used different imputation methods for our dataset. Also in cases where needed, we tuned our parameters using GridSearchCV. For example, for SVM we used different kernels and different values of C to control for overfitting. However, our work was not fruitful, tunning the parameters did not yield better performance that the one obtained with our naive Bayes.</p>
 </li>
 <li><p>Validation is the technique of separating your dataset for analyzing the performance of your algorithm. In general, we want our algorithm to reduce the sources of errors as maximum as possible to give us good predictions. A method of trying to assess how much error we have in our predicitions is to separate our dataset in training and testing. We fit our algorithm with the data of the training set and then check the performance of our algorithm against the testing set. If this procedure is not followed, multiple problems may arise. One of the most significant ones, is that we might be prone to overfitting. If we use the same data for fitting and evaluation purposes in the end we will prefer those models that fit perfectly to the data at hand. This model will prove to be a poor generalization for the rest of the data, and therefore will generate poor predictions. In our analysis we were carefult to always separate our data in training and testing. The fitting was done with the training data, the evaluation with the testing data.</p>
 </li>
-<li><p>As we explained above, we use three different performance metrics: accuracy, precision and recall. As we have quite an inbalance dataset (we have very few poi cases), we can get a high accuracy just by guessing that a person is not poi. Therefore, we wanted to concentrate on precision and recall. We defined precision and recall above. To further make our point, here we present our answer one more time:</p>
+<li><p>As we explained above, we use three different performance metrics: accuracy, precision and recall. As we have quite an inbalance dataset (we have very few poi cases), we can get a high accuracy just by guessing that a person is not poi. Therefore, we wanted to concentrate on precision and recall.</p>
 </li>
 </ol>
+<p>Suppose, for example, that each person that might be identified as a potential poi will be further screened. This will imply high cost for the administration and for the person if they are incorrectly labeled like that. On the other hand, in terms of justice, we want to make sure that all of the persons that had been involved in this scandal will be prosecuted. Depending on which costs we want to minimize we might be looking at precision or recall. In those cases we might be more interested in using measures like precision / recall.</p>
 <p><strong>Precision</strong>, refers to the ability of our algorithm to identify persons that are truly persons of interest. A good precision means that everytime someone is labeled as a poi by our algorithm, we have high confidence that that person is in fact a poi.</p>
 <p><strong>Recall</strong> refers to the ability of our algorithm to identify all of those poi in our dataset. A good recall gives us the confidence that if we have a poi in our dataset, it will not be ignored by our algorithm.</p>
 <p>Unfortunately, precision and recall sometimes do not go hand in hand. To see this, consider an example where our algorithm labels all as poi. The recall will be perfect. All of the poi in our dataset were correctly identified. On the other hand, the precision is terrible, given that this algorithm does not give us the confidence that someone labeled as poi is actually such. On the other hand we might have an algorithm that is very precise: once someone is taken to be a poi we are very confident that it is actually is. However, this confidence might come at a cost of not being able to identify all of the actual poi in our dataset, rendering our recall low.</p>
 
 </div>
 </div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[498]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1">#passing final data to use in poi_id.py and test.py</span>
-<span class="n">final_data</span> <span class="o">=</span> <span class="n">all_data_fill_zeros</span> <span class="o">=</span> <span class="n">data_enron</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;email_address&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[499]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">dict_data</span> <span class="o">=</span> <span class="n">final_data</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;final_data_proj.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
-    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">dict_data</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span> 
-</pre></div>
-
-</div>
-</div>
-</div>
-
 </div>
     </div>
   </div>
