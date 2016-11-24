@@ -126,10 +126,10 @@
 
     // Creating margins and figure sizes
     var margin = {top: 20, right: 20, bottom: 110, left: 40},
-        margin2 = {top: 330, right: 20, bottom: 30, left: 40},
+        margin2 = {top: 250, right: 20, bottom: 30, left: 40},
         width = 900 - margin.left - margin.right,
-        height = 400  - margin.top - margin.bottom,
-        height2 = 400 - margin2.top - margin2.bottom;
+        height = 320  - margin.top - margin.bottom,
+        height2 = 320 - margin2.top - margin2.bottom;
 
     var parseDate = d3.timeParse("%Y-%m-%d"); 
 
@@ -209,7 +209,7 @@
 
   svg.append("text")
         .attr('class', "axis-label")
-        .attr("y", 300)
+        .attr("y", 230)
         .attr('x', 880)
         .attr('text-anchor', "end")
         .attr('dy', ".75em")
@@ -334,7 +334,7 @@
 			   .enter()
 			   .append("circle")
          .attr('class', "dot" )
-         .attr('opacity', 0.7 )
+         .attr('opacity', 0.9 )
          .filter(function (d) {return d.properties.EQ_PRIMARY != null})
             .attr("cx", function(d) {
                return xScale(parseDate(d.properties.Date));
