@@ -22,7 +22,11 @@ Once I had done that, one friend notice that while the scatterplot was fairly in
 
 The final tester was happy about the interaction but said that labels were lacking, making it difficult for the user to really engage with the data. He recommended me to appropriately label each point and to generate a legend for the map. He also notice that my axis were not labeled. 
 
-You can see how the first plot in index_1, then I included sequentially the changes in index_2.
+You can see how the first plot in index_1, then I included sequentially the changes in index_final.
+
+### First attempt
+
+[first](https://cloud.githubusercontent.com/assets/7328852/20595247/7b6f9ae2-b239-11e6-8f29-69d1e9d0d666.png) 
 
 ## Resources
 
