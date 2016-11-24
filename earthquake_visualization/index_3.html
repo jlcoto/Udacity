@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+        <link rel="stylesheet" href="leaflet/leaflet.css" />
+        <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    </head>
+
+    <style> /* set the CSS */
+
+.graph-title {
+  font-family: sans-serif;
+  font-size: 20px;
+  margin-left: 265px;
+  font-weight: lighter;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
+
+.no-mouse {
+    pointer-events: none;
+}
+
+#mapid { 
+  height: 300px;
+  width: 600px; 
+  padding: 20px;
+  margin-left: 140px;
+}
+
+.legend {
+  position: absolute;
+  height: 80px;
+  width:250px;
+  background-image: url("legend.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 6;
+  border-radius: 10px;
+}
+
+.axis-label {
+  font-family: sans-serif;
+  font-size: 10px;
+}
+
+
+#tooltip {
+        position: absolute;
+        width: 150px;
+        height: auto;
+        padding: 10px;
+        background-color: white;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 10px;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+        opacity: 0.8;
+}
+
+#tooltip.hidden {
+        display: none;
+}
+
+#tooltip p {
+        margin: 0;
+        font-family: sans-serif;
+        font-size: 12px;
+        line-height: 14px;
+}
+    </style>
+
+    <body>
+
+    <h1 class="graph-title">Significant Earthquakes around the World</h1>
+
+
+
+    <div id="mapid"></div>
+
+    <div id="tooltip" class="hidden">
+        <p><strong>Earthquake Info</strong></p>
+        <p><span id="date">100</span></p> 
+        <p><span id="magnitude">100</span></p> 
+        <p><span id="deaths">100</span></p> 
+        <p><span id="country">100</span></p>
+    </div>
+
+    <div class="legend">
+    </div>
+
+
+    <script type="text/javascript">
+
+    // Creating the Map 
+
+    var mapw = d3.select("#mapid").style("width");
+    var maph = d3.select("#mapid").style("height") ;
+    var tooltipw = d3.select("#tooltip").style("width");
+
+
+    var mymap = L.map('mapid', {
+            center: [10.0, 15.0], 
+            minZoom: 1, 
+            zoom: 1});
+
+    var mapLink = L.tileLayer("https://api.mapbox.com/styles/v1/josecoto/civ8gwgk3000a2ipdgnsscnai/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9zZWNvdG8iLCJhIjoiY2l2OGZxZWNuMDAxODJ6cGdhcGFuN2IyaCJ9.7szLs0lc_2EjX6g21HI_Kg");
+
+    // // Creating the svg call
+    mapLink.addTo(mymap);
+    var svg_map = d3.select(mymap.getPanes().overlayPane).append("svg");
+    var g = svg_map.append("g").attr("class", "leaflet-zoom-hide");
+
+
+    // Creating margins and figure sizes
+    var margin = {top: 20, right: 20, bottom: 110, left: 40},
+        margin2 = {top: 330, right: 20, bottom: 30, left: 40},
+        width = 900 - margin.left - margin.right,
+        height = 400  - margin.top - margin.bottom,
+        height2 = 400 - margin2.top - margin2.bottom;
+
+    var parseDate = d3.timeParse("%Y-%m-%d"); 
+
+
+    //Defining scales and axes for plot and brush plot
+    var xScale = d3.scaleTime()
+                    .range([0, width]);
+
+    var yScale = d3.scaleLinear()
+                    .range([height, 0]);
+
+    var navXScale = d3.scaleTime()
+                        .range([0, width]);
+
+    var navYScale = d3.scaleLinear()
+                        .range([height2, 0]);
+
+    var xAxis = d3.axisBottom(xScale);
+
+    var yAxis = d3.axisLeft(yScale);
+
+    var navXAxis = d3.axisBottom(navXScale);
+
+    var brush = d3.brushX()
+                  .extent([[0, 0], [width, height2]])
+                  .on("brush end", brushed);
+
+    // Defining tooltip with information for every point
+
+    var tooltip = d3.select("#tooltip")
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+
+    svg.append("defs").append("clipPath")
+        .attr("id", "clip")
+      .append("rect")
+        .attr("width", width)
+        .attr("height", height);
+    
+
+    var focus = svg.append("g")
+        .attr("class", "focus")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+    var context = svg.append("g")
+        .attr("class", "context")
+        .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+  //Defining scales for radius of points and the colors. Colors chosen from Color Brewer Palette
+
+  var scaleQuantRad = d3.scaleQuantile()
+                              .domain([0, 3, 11, 101, 316000 ])
+                              .range([3, 4, 5, 6]); 
+
+  var scaleQuantColor = d3.scaleQuantile()
+                              .domain([0, 3, 11, 101, 316000 ])
+                              .range(["#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]);
+
+
+  // Adding Legend
+  d3.select(".legend")
+      .style('left', "170px")
+      .style('top', '300px')
+
+
+  svg.append("text")
+        .attr('class', "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 10)
+        .attr('x', -20)
+        .attr('text-anchor', "end")
+        .attr('dy', ".75em")
+        .text("Magnitude");
+
+  svg.append("text")
+        .attr('class', "axis-label")
+        .attr("y", 300)
+        .attr('x', 880)
+        .attr('text-anchor', "end")
+        .attr('dy', ".75em")
+        .text("Date");
+
+  //Passing data to the function
+
+    d3.json("ethqk.geojson", function(data) {
+
+      //1. Working with the map
+      //Projecting Lat/long points to our map
+        function projectPoint(x, y) {
+                var point = mymap.latLngToLayerPoint(new L.LatLng(y, x));
+                this.stream.point(point.x, point.y);
+            } 
+
+
+        //Transforming to the specific projection
+        var transform = d3.geoTransform({point: projectPoint});
+        var d3path = d3.geoPath().projection(transform);
+
+        // similar to projectPoint this function converts lat/long to
+        // svg coordinates except that it accepts a point from our 
+        // GeoJSON
+        function applyLatLngToLayer(d) {
+                var y = d.geometry.coordinates[1]
+                var x = d.geometry.coordinates[0]
+                return mymap.latLngToLayerPoint(new L.LatLng(y, x))
+            }
+
+        var feature = g.selectAll("circle")
+                        .data(data.features)
+                        .enter().append("circle")
+                        .attr('class', "mapcircle")
+                        .attr('opacity', 0.4 )
+        
+        //Using helper function to plot points                
+        plot_points(feature)
+
+            feature
+                .on("mouseover", function(d) {
+                    selection = d3.select(this)
+                                .attr('r', 15)
+                                //Update the tooltip position and value
+                                tool_tip_show(parseInt(mapw) - parseInt(tooltipw) + 160 + "px", 55 + "px", d)
+
+                                //Show the tooltip
+                                d3.select("#tooltip").classed("hidden", false);
+                                });
+
+            feature
+                .on("mouseout", function() {
+                            d3.select(this)
+                            .transition()
+                            .duration(500)
+                            .attr("r", function (d) {
+                                if (d.properties.DEATHS == null) {
+                                  return 3
+                                }
+                                else {
+                                  return scaleQuantRad(d.properties.DEATHS);
+                                }
+                                });
+
+                          //Hide the tooltip
+                          d3.select("#tooltip").classed("hidden", true);
+                          });
+
+
+
+       
+       mymap.on("viewreset", reset);
+       reset();
+
+
+       // Recalculating bounds for redrawing points each time map changes
+       function reset() {
+                var bounds = d3path.bounds(data)
+                    topLeft = [bounds[0][0] + 10 , bounds[0][1] - 10]
+                    bottomRight = [bounds[1][0] + 10 , bounds[1][1] + 10];
+
+
+                // Setting the size and location of the overall SVG container
+                svg_map
+                    .attr("width", bottomRight[0] - topLeft[0] )
+                    .attr("height", bottomRight[1] - topLeft[1] )
+                    .style("left", topLeft[0] + "px")
+                    .style("top", topLeft[1]  + "px");
+
+                g.attr("transform", "translate(" + (-topLeft[0] ) + "," + (-topLeft[1] ) + ")");
+
+                feature.attr("transform",
+                    function(d) {
+                        return "translate(" +
+                            applyLatLngToLayer(d).x + "," +
+                            applyLatLngToLayer(d).y + ")";
+                    });
+        }
+
+      //2. Working with the scatter plot
+
+      //Setting scale parameters
+    	var maxDate = d3.max(data.features, function(d) { return parseDate(d.properties.Date)});
+    	var minDate = d3.min(data.features, function(d) { return parseDate(d.properties.Date)});
+    	var maxMag  = d3.max(data.features, function(d) { return d.properties.EQ_PRIMARY});
+    	var minMag  = d3.min(data.features, function(d) { return d.properties.EQ_PRIMARY})
+
+
+      maxDate_plus = new Date(maxDate.getTime() + 300*144000000)
+    	xScale.domain([minDate, maxDate_plus]);
+    	yScale.domain([0, maxMag + 1]);
+      navXScale.domain(xScale.domain())
+      navYScale.domain(yScale.domain())
+
+		  var dots = focus.append("g");
+
+      dots.attr("clip-path", "url(#clip)");
+
+      //Plotting points on the scatter plot
+      selected_dots = dots.selectAll("dot")
+			   .data(data.features)
+			   .enter()
+			   .append("circle")
+         .attr('class', "dot" )
+         .attr('opacity', 0.7 )
+         .filter(function (d) {return d.properties.EQ_PRIMARY != null})
+            .attr("cx", function(d) {
+               return xScale(parseDate(d.properties.Date));
+            })
+            .attr("cy", function(d) {
+               return yScale(d.properties.EQ_PRIMARY);
+            });
+
+        plot_points(selected_dots)
+        
+        selected_dots
+          .on("mouseover", function(d) {
+
+            //Connecting scatter plot with map -> Points hoover on scatter plot will 
+            // have the same behavior on map.
+            var xPosition = parseFloat(d3.select(this).attr("cx")) + 75 ;
+            var yPosition = parseFloat(d3.select(this).attr("cy")) + 550;
+
+            curent_id = d3.select(this)._groups[0][0].__data__.id.toString()
+
+
+            d3.selectAll(".mapcircle")
+                .filter(function (d) {return d.id === curent_id ;})
+                .attr('r', 15)
+
+
+            d3.select(this)
+                .attr('r', 15)
+
+          //Update the tooltip position and value
+          tool_tip_show(xPosition + "px", yPosition - 200 + "px", d)
+
+
+
+            //Show the tooltip
+            d3.select("#tooltip").classed("hidden", false);
+            });
+
+        selected_dots
+          .on("mouseout", function() {
+            //Returning to original characteristics 
+              d3.select(this)
+              .transition()
+              .duration(500)
+              .attr("r", function (d) {
+                  if (d.properties.DEATHS == null) {
+                    return 3
+                  }
+                  else {
+                    return scaleQuantRad(d.properties.DEATHS);
+                  }
+                  })
+
+              d3.selectAll(".mapcircle")
+                .filter(function (d) {return d.id === curent_id ;})
+                .transition()
+                .duration(500)
+                .attr("r", function (d) {
+                  if (d.properties.DEATHS == null) {
+                    return 3
+                  }
+                  else {
+                    return scaleQuantRad(d.properties.DEATHS);
+                  }
+                  })
+
+            //Hide the tooltip
+            d3.select("#tooltip").classed("hidden", true);
+            });
+
+
+
+      // //Adding Axis
+      focus.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+  
+      focus.append("g")
+          .attr("class", "axis axis--y")
+          .call(yAxis);
+
+    // 3. Plotting navigation chart
+                          
+      var dots = context.append("g");
+      dots.attr("clip-path", "url(#clip)");
+
+    //Plotting the dots
+
+      small_points = dots.selectAll("dot")
+             .data(data.features)
+             .enter()
+             .append("circle")
+             .attr('class', 'dotContext')
+             .filter(function (d) {return d.properties.EQ_PRIMARY != null})
+             .attr("cx", function(d) {
+                return navXScale(parseDate(d.properties.Date));
+             })
+             .attr("cy", function(d) {
+                return navYScale(d.properties.EQ_PRIMARY);
+             });
+
+
+       plot_points(small_points, 3, 3)
+
+        context.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", "translate(0," + height2 + ")")
+            .call(navXAxis);
+    
+        context.append("g")
+                  .attr("class", "brush")
+                  .call(brush)
+                  .call(brush.move, xScale.range());    
+    	});
+
+
+
+      function brushed() {
+        //Function that updates scatter plot and map each time brush is used
+            var s = d3.event.selection || navXScale.range();
+            xScale.domain(s.map(navXScale.invert, navXScale));
+            focus.selectAll(".dot")
+                    .filter(function (d) {return d.properties.EQ_PRIMARY != null})
+                    .attr("cx", function(d) {
+                       return xScale(parseDate(d.properties.Date));
+                    })
+                    .attr("cy", function(d) {
+                       return yScale(d.properties.EQ_PRIMARY);
+                    })
+
+            focus.select(".axis--x").call(xAxis);
+
+
+               if (d3.event.type == "end") {
+                    curr_points_view = change_map_points()
+                    }
+
+          }
+
+
+      function change_map_points () {
+        //Function that plots points on map after a selection with map has been made.
+        var curr_view_erth = []
+          d3.selectAll(".dot").each(
+            function(d, i) {
+              if (parseDate(d.properties.Date) >= xScale.domain()[0] && parseDate(d.properties.Date) <= xScale.domain()[1] ) {
+                  curr_view_erth.push(d.id.toString());
+                  }})
+
+          map_points_change = d3.selectAll(".mapcircle")
+              .filter(function(d) {return curr_view_erth.indexOf(d.id) != -1;} )
+              .attr('r', 10)
+              .transition()
+              .duration(1200);
+
+          plot_points(map_points_change)
+            
+
+          d3.selectAll(".mapcircle")
+              .filter(function(d) {return curr_view_erth.indexOf(d.id) == -1;} )
+              .transition()
+              .duration(1250)
+              .attr('r', 0 )
+
+              }
+
+
+    function plot_points(selection, rescale_null = 1, rescale_val = 1) {
+          // Helper function for plotting points.
+            selection
+                .attr("r", function (d) {
+                         if (d.properties.DEATHS === null) {
+                           return 3 / rescale_null;
+                         }
+                         else {
+                           return scaleQuantRad(d.properties.DEATHS) / rescale_val ;
+                         }
+                        })
+                        .attr('fill', function (d) {
+                          if (d.properties.DEATHS === null) {
+                              return "#867E7E"
+                              }
+                           else {
+                             return scaleQuantColor(d.properties.DEATHS);
+                           }
+                          })
+                        }
+
+                        
+
+    function tool_tip_show(left, rigth, d) {
+          //Helper function for including information tool_tip
+            tooltip
+              .style("left", left)
+              .style("top", rigth)
+              .select("#magnitude")
+              .text("Magnitude: " + d.properties.EQ_PRIMARY)
+
+              tooltip
+                .select("#date")
+                .text("Date: " + d.properties.Date)
+                          
+              if (d.properties.DEATHS == null) {
+                  tooltip
+                    .select("#deaths")
+                    .text("Deaths: No entry" )
+                    } else {
+                  tooltip
+                    .select("#deaths")
+                    .text("Deaths: " + d.properties.DEATHS)
+                    }
+
+              if (d.properties.NAME === null) {
+                  tooltip
+                    .select("#country")
+                    .text("Country: No entry" )
+                    } else {
+                  tooltip
+                    .select("#country")
+                    .text("Country: " + d.properties.NAME)
+                    }
+
+
+          }
+
+
+
+
+
+
+
+
+
+
+
+
+     </script>
+    </body>
+</html>

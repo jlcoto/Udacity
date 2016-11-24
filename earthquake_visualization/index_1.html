@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3 Page Template</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+        <link rel="stylesheet" href="leaflet/leaflet.css" />
+        <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    </head>
+
+
+        <body>
+
+        <script>
+
+         var margin = {top: 20, right: 20, bottom: 110, left: 40},
+        margin2 = {top: 330, right: 20, bottom: 30, left: 40},
+        width = 900 - margin.left - margin.right,
+        height = 400  - margin.top - margin.bottom,
+        height2 = 400 - margin2.top - margin2.bottom;
+
+    var parseDate = d3.timeParse("%Y-%m-%d"); 
+
+    var xScale = d3.scaleTime()
+                    .range([0, width]);
+
+    var yScale = d3.scaleLinear()
+                    .range([height, 0]);
+
+    var navXScale = d3.scaleTime()
+                        .range([0, width]);
+
+    var navYScale = d3.scaleLinear()
+                        .range([height2, 0]);
+
+    var xAxis = d3.axisBottom(xScale);
+
+    var yAxis = d3.axisLeft(yScale);
+
+    var navXAxis = d3.axisBottom(navXScale);
+
+    var brush = d3.brushX()
+                  .extent([[0, 0], [width, height2]])
+                  .on("brush end", brushed);
+
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+
+    svg.append("defs").append("clipPath")
+        .attr("id", "clip")
+      .append("rect")
+        .attr("width", width)
+        .attr("height", height);
+    
+
+    var focus = svg.append("g")
+        .attr("class", "focus")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+    var context = svg.append("g")
+        .attr("class", "context")
+        .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+  var scaleQuantRad = d3.scaleQuantile()
+                              .domain([0, 3, 11, 101, 316000 ])
+                              .range([3, 4, 5, 6]); 
+
+  var scaleQuantColor = d3.scaleQuantile()
+                              .domain([0, 3, 11, 101, 316000 ])
+                              .range(["#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]);
+
+
+     d3.json("ethqk.geojson", function(data) {
+
+
+        var maxDate = d3.max(data.features, function(d) { return parseDate(d.properties.Date)});
+    	var minDate = d3.min(data.features, function(d) { return parseDate(d.properties.Date)});
+    	var maxMag  = d3.max(data.features, function(d) { return d.properties.EQ_PRIMARY});
+    	var minMag  = d3.min(data.features, function(d) { return d.properties.EQ_PRIMARY})
+
+
+      maxDate_plus = new Date(maxDate.getTime() + 300*144000000)
+    	xScale.domain([minDate, maxDate_plus]);
+    	yScale.domain([0, maxMag + 1]);
+      navXScale.domain(xScale.domain())
+      navYScale.domain(yScale.domain())
+
+                        
+
+  
+		  var dots = focus.append("g");
+
+      dots.attr("clip-path", "url(#clip)");
+
+      dots.selectAll("dot")
+			   .data(data.features)
+			   .enter()
+			   .append("circle")
+         .attr('class', "dot" )
+         .filter(function (d) {return d.properties.EQ_PRIMARY != null})
+            .attr("cx", function(d) {
+               return xScale(parseDate(d.properties.Date));
+            })
+            .attr("cy", function(d) {
+               return yScale(d.properties.EQ_PRIMARY);
+            })
+			   .attr("r", function (d) {
+          if (d.properties.DEATHS == null) {
+            return 3
+          }
+          else {
+            return scaleQuantRad(d.properties.DEATHS);
+          }
+         })
+			   .attr('fill', function (d) {
+                    if (d.properties.DEATHS == null) {
+            return "#E0DFDF"
+          }
+          else {
+            return scaleQuantColor(d.properties.DEATHS);
+          }
+         })
+         .attr('opacity', 0.9 )
+        .on("mouseover", function(d) {
+
+            var xPosition = parseFloat(d3.select(this).attr("cx")) + 75 ;
+            var yPosition = parseFloat(d3.select(this).attr("cy")) + 550;
+
+            curent_id = d3.select(this)._groups[0][0].__data__.id.toString()
+
+            d3.selectAll(".mapcircle")
+                .filter(function (d) {return d.id === curent_id ;})
+                .attr('r', 15)
+            d3.select(this)
+                .attr('r', 15) 
+            })
+          .on("mouseout", function() {
+              d3.select(this)
+              .transition()
+              .duration(500)
+              .attr("r", function (d) {
+                  if (d.properties.DEATHS == null) {
+                    return 3
+                  }
+                  else {
+                    return scaleQuantRad(d.properties.DEATHS);
+                  }
+                  })
+
+                  });
+
+            //Hide the tooltip
+
+
+
+
+      // //Adding Axis
+      focus.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+  
+      focus.append("g")
+          .attr("class", "axis axis--y")
+          .call(yAxis);
+
+    // Plotting navigation chart
+                          
+      var dots = context.append("g");
+      dots.attr("clip-path", "url(#clip)");
+      dots.selectAll("dot")
+             .data(data.features)
+             .enter()
+             .append("circle")
+             .attr('class', 'dotContext')
+             .filter(function (d) {return d.properties.EQ_PRIMARY != null})
+             .attr("cx", function(d) {
+                return navXScale(parseDate(d.properties.Date));
+             })
+             .attr("cy", function(d) {
+                return navYScale(d.properties.EQ_PRIMARY);
+             })
+         .attr("r", function (d) {
+          if (d.DEATHS == null) {
+            return 1
+          }
+          else {
+            return scaleQuantRad(d.properties.DEATHS) / 3;
+          }
+         })
+         .attr('fill', function (d) {
+                    if (d.properties.DEATHS == null) {
+            return "#E0DFDF"
+          }
+          else {
+            return scaleQuantColor(d.properties.DEATHS);
+          }
+         });
+
+        context.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", "translate(0," + height2 + ")")
+            .call(navXAxis);
+    
+        context.append("g")
+                  .attr("class", "brush")
+                  .call(brush)
+                  .call(brush.move, xScale.range());    
+    	});
+
+
+
+
+
+
+              function brushed() {
+        // if (d3.event.sourceEvent)  return; // ignore brush-by-zoom //&& d3.event.sourceEvent.type === "zoom")
+            var s = d3.event.selection || navXScale.range();
+            xScale.domain(s.map(navXScale.invert, navXScale));
+            focus.selectAll(".dot")
+                    .filter(function (d) {return d.properties.EQ_PRIMARY != null})
+                    .attr("cx", function(d) {
+                       return xScale(parseDate(d.properties.Date));
+                    })
+                    .attr("cy", function(d) {
+                       return yScale(d.properties.EQ_PRIMARY);
+                    })
+
+          }
+
+
+               </script>
+    </body>
+</html>
