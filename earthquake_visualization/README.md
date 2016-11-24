@@ -27,6 +27,9 @@ You can see how the first plot in index_1, then I included sequentially the chan
 ### First attempt
 
 ![first](https://cloud.githubusercontent.com/assets/7328852/20595247/7b6f9ae2-b239-11e6-8f29-69d1e9d0d666.png) 
+
+### Final visualization 
+
 ![second](https://cloud.githubusercontent.com/assets/7328852/20595586/bb1240a4-b23a-11e6-8537-292b18a19149.png)
 
 ## Resources
