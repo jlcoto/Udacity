@@ -48,8 +48,12 @@ Skills: D3.js, Leaflet, GeoPandas, Pandas, Python.
 
 • Designed an A/B test, including which metrics to measure and how long the test should be run. I also analyzed the results of an A/B test that was run by Udacity, recommended a decision, and proposed a follow-up experiment.
 
-![a b test](https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png)
 Skills: Pandas, IPython.
+
+<div style="text-align:center"><img src ="https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png" /></div>
+
+![a b test](https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png)
+
 
 
 
