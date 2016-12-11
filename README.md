@@ -9,9 +9,15 @@ Repository where I collect all the assignments for the Udacity Data Analytics Na
 
 Skills: Python, IPython, Pandas.
 
+![statistics](https://github.com/jlcoto/Udacity/blob/master/img/statistics.png)
+
 ### Exploratory Analysis with Pandas -- [Check repo](https://github.com/jlcoto/Udacity/tree/master/pandas_wrangling)
 
 •  What variables are related to surviving the Titanic? In this data set I posed this question and used different descriptive and modelling strategies to uncover these relations.
+
+Skills: Python, IPython, Pandas.
+
+![exploratory pandas](https://github.com/jlcoto/Udacity/blob/master/img/exp_analysis_pandas.png)
 
 ### Data gathering and wrangling with SQL and Pandas -- [Check repo](https://github.com/jlcoto/Udacity/tree/master/data_wrangling)
 • Parsed 140 Mb XML document to obtain relevant data.
@@ -19,6 +25,8 @@ Skills: Python, IPython, Pandas.
 • Stored cleaned data in a SQL database, performed queries and generated plots. Created map plots to inspect georeferenced data.
 
 Skills: Python, SQL, XML parsing, regular expressions, Pandas, BaseMap, GeoPandas.
+
+![wrangling pandas](https://github.com/jlcoto/Udacity/blob/master/img/visual_data_wrang_pand.png)
 
 ### Exploratory Analysis with R -- [Check repo](https://github.com/jlcoto/Udacity/tree/master/earthquake_project)
 
@@ -28,6 +36,8 @@ Skills: Python, SQL, XML parsing, regular expressions, Pandas, BaseMap, GeoPanda
 
 Skills: R, R Studio, ggplot, Python, pandas, GeoPandas.
 
+![exploratory R](https://github.com/jlcoto/Udacity/blob/master/img/visual_r_wrang.png)
+
 ### Machine Learning - Enron Case -- [Check repo](https://github.com/jlcoto/Udacity/tree/master/machine_learning_project)
 
 • Identified which Enron employees are more likely to have committed fraud using machine learning and public Enron financial and email data.
@@ -35,6 +45,8 @@ Skills: R, R Studio, ggplot, Python, pandas, GeoPandas.
 • Tunned algorithms’ parameters to improve original results. 
 
 Skills: Python, Scikit-learn, Pandas, machine learning. 
+
+![machine learning](https://github.com/jlcoto/Udacity/blob/master/img/visual_machine.png)
 
 ### Data visualization - Earthquake project -- [Check repo](https://github.com/jlcoto/Udacity/tree/master/earthquake_visualization)
 
@@ -44,14 +56,14 @@ Skills: Python, Scikit-learn, Pandas, machine learning.
 
 Skills: D3.js, Leaflet, GeoPandas, Pandas, Python.
 
+![earthquake visualization](https://github.com/jlcoto/Udacity/blob/master/img/visual_earthqk.png)
+
 ### A/B testing -- [Check repo](https://github.com/jlcoto/Udacity/tree/master/a_b_testing)
 
 • Designed an A/B test, including which metrics to measure and how long the test should be run. I also analyzed the results of an A/B test that was run by Udacity, recommended a decision, and proposed a follow-up experiment.
 
 Skills: Pandas, IPython.
 
-
-<div style="margin-left:100px"><img src ="https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png" /></div>
 
 ![a b test](https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png)
 
