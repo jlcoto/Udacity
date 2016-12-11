@@ -51,7 +51,7 @@ Skills: D3.js, Leaflet, GeoPandas, Pandas, Python.
 Skills: Pandas, IPython.
 
 
-<div style="text-align:center"><img src ="https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png" /></div>
+<div style="margin-left:20px"><img src ="https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png" /></div>
 
 ![a b test](https://github.com/jlcoto/Udacity/blob/master/img/a_b_test.png)
 
