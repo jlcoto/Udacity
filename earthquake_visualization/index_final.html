@@ -5,7 +5,7 @@
         <title>D3 Page Template</title>
         <script type="text/javascript" src="d3/d3.js"></script>
         <link rel="stylesheet" href="leaflet/leaflet.css" />
-        <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
     </head>
 
     <style> /* set the CSS */
@@ -29,9 +29,9 @@
     pointer-events: none;
 }
 
-#mapid { 
+#mapid {
   height: 300px;
-  width: 600px; 
+  width: 600px;
   padding: 20px;
   margin-left: 140px;
 }
@@ -92,9 +92,9 @@
 
     <div id="tooltip" class="hidden">
         <p><strong>Earthquake Info</strong></p>
-        <p><span id="date">100</span></p> 
-        <p><span id="magnitude">100</span></p> 
-        <p><span id="deaths">100</span></p> 
+        <p><span id="date">100</span></p>
+        <p><span id="magnitude">100</span></p>
+        <p><span id="deaths">100</span></p>
         <p><span id="country">100</span></p>
     </div>
 
@@ -104,7 +104,7 @@
 
     <script type="text/javascript">
 
-    // Creating the Map 
+    // Creating the Map
 
     var mapw = d3.select("#mapid").style("width");
     var maph = d3.select("#mapid").style("height") ;
@@ -112,8 +112,8 @@
 
 
     var mymap = L.map('mapid', {
-            center: [10.0, 15.0], 
-            minZoom: 1, 
+            center: [10.0, 15.0],
+            minZoom: 1,
             zoom: 1});
 
     var mapLink = L.tileLayer("https://api.mapbox.com/styles/v1/josecoto/civ8gwgk3000a2ipdgnsscnai/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9zZWNvdG8iLCJhIjoiY2l2OGZxZWNuMDAxODJ6cGdhcGFuN2IyaCJ9.7szLs0lc_2EjX6g21HI_Kg");
@@ -131,7 +131,7 @@
         height = 320  - margin.top - margin.bottom,
         height2 = 320 - margin2.top - margin2.bottom;
 
-    var parseDate = d3.timeParse("%Y-%m-%d"); 
+    var parseDate = d3.timeParse("%Y-%m-%d");
 
 
     //Defining scales and axes for plot and brush plot
@@ -171,12 +171,12 @@
       .append("rect")
         .attr("width", width)
         .attr("height", height);
-    
+
 
     var focus = svg.append("g")
         .attr("class", "focus")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
+
     var context = svg.append("g")
         .attr("class", "context")
         .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
@@ -185,7 +185,7 @@
 
   var scaleQuantRad = d3.scaleQuantile()
                               .domain([0, 3, 11, 101, 316000 ])
-                              .range([3, 4, 5, 6]); 
+                              .range([3, 4, 5, 6]);
 
   var scaleQuantColor = d3.scaleQuantile()
                               .domain([0, 3, 11, 101, 316000 ])
@@ -224,7 +224,7 @@
         function projectPoint(x, y) {
                 var point = mymap.latLngToLayerPoint(new L.LatLng(y, x));
                 this.stream.point(point.x, point.y);
-            } 
+            }
 
 
         //Transforming to the specific projection
@@ -232,7 +232,7 @@
         var d3path = d3.geoPath().projection(transform);
 
         // similar to projectPoint this function converts lat/long to
-        // svg coordinates except that it accepts a point from our 
+        // svg coordinates except that it accepts a point from our
         // GeoJSON
         function applyLatLngToLayer(d) {
                 var y = d.geometry.coordinates[1]
@@ -245,8 +245,8 @@
                         .enter().append("circle")
                         .attr('class', "mapcircle")
                         .attr('opacity', 0.4 )
-        
-        //Using helper function to plot points                
+
+        //Using helper function to plot points
         plot_points(feature)
 
             feature
@@ -280,7 +280,7 @@
 
 
 
-       
+
        mymap.on("viewreset", reset);
        reset();
 
@@ -344,11 +344,11 @@
             });
 
         plot_points(selected_dots)
-        
+
         selected_dots
           .on("mouseover", function(d) {
 
-            //Connecting scatter plot with map -> Points hoover on scatter plot will 
+            //Connecting scatter plot with map -> Points hoover on scatter plot will
             // have the same behavior on map.
             var xPosition = parseFloat(d3.select(this).attr("cx")) + 75 ;
             var yPosition = parseFloat(d3.select(this).attr("cy")) + 550;
@@ -375,7 +375,7 @@
 
         selected_dots
           .on("mouseout", function() {
-            //Returning to original characteristics 
+            //Returning to original characteristics
               d3.select(this)
               .transition()
               .duration(500)
@@ -412,13 +412,13 @@
           .attr("class", "axis axis--x")
           .attr("transform", "translate(0," + height + ")")
           .call(xAxis);
-  
+
       focus.append("g")
           .attr("class", "axis axis--y")
           .call(yAxis);
 
     // 3. Plotting navigation chart
-                          
+
       var dots = context.append("g");
       dots.attr("clip-path", "url(#clip)");
 
@@ -444,11 +444,11 @@
             .attr("class", "axis axis--x")
             .attr("transform", "translate(0," + height2 + ")")
             .call(navXAxis);
-    
+
         context.append("g")
                   .attr("class", "brush")
                   .call(brush)
-                  .call(brush.move, xScale.range());    
+                  .call(brush.move, xScale.range());
     	});
 
 
@@ -492,7 +492,7 @@
               .duration(1200);
 
           plot_points(map_points_change)
-            
+
 
           d3.selectAll(".mapcircle")
               .filter(function(d) {return curr_view_erth.indexOf(d.id) == -1;} )
@@ -524,7 +524,7 @@
                           })
                         }
 
-                        
+
 
     function tool_tip_show(left, rigth, d) {
           //Helper function for including information tool_tip
@@ -537,7 +537,7 @@
               tooltip
                 .select("#date")
                 .text("Date: " + d.properties.Date)
-                          
+
               if (d.properties.DEATHS == null) {
                   tooltip
                     .select("#deaths")
